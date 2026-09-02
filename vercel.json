@@ -17,18 +17,6 @@
     {
       "src": "/api/(.*)",
       "dest": "backend/src/server.ts"
-    },
-    {
-      "src": "/health",
-      "dest": "backend/src/server.ts"
-    },
-    {
-      "src": "/uploads/(.*)",
-      "dest": "backend/src/server.ts"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/"
     }
   ]
 }
