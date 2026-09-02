@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <meta name="description" content="Protego — Intelligent Community Safety & Tactical Incident Response Network" />
+    <title>Protego — Community Safety & Incident Command Network</title>
+  </head>
+  <body>
+    <div id="root">
+      <style>
+        #initial-loader {
+          position: fixed;
+          top: 0; left: 0; width: 100vw; height: 100vh;
+          background-color: #040812;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          z-index: 99999;
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+        
+        .shield-container {
+          position: relative;
+          width: 80px;
+          height: 90px;
+          margin-bottom: 30px;
+        }
+
+        .shield-svg {
+          width: 100%;
+          height: 100%;
+          stroke: #3b82f6; /* blue-500 */
+          stroke-width: 1.5;
+          fill: rgba(59, 130, 246, 0.05);
+          filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.3));
+          animation: pulse-shield 2s ease-in-out infinite;
+        }
+
+        .scan-line {
+          position: absolute;
+          top: 0;
+          left: 10%;
+          width: 80%;
+          height: 2px;
+          background: #60a5fa; /* blue-400 */
+          box-shadow: 0 0 10px 2px rgba(96, 165, 250, 0.5);
+          animation: scan 2s linear infinite;
+        }
+
+        .auth-text-container {
+          text-align: center;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .main-text {
+          color: #e2e8f0; /* slate-200 */
+          font-size: 13px;
+          font-weight: 700;
+          letter-spacing: 4px;
+          text-transform: uppercase;
+        }
+
+        .sub-text {
+          color: #3b82f6; /* blue-500 */
+          font-size: 11px;
+          letter-spacing: 1px;
+          animation: blink 1s step-end infinite;
+        }
+
+        @keyframes scan {
+          0% { top: 5%; opacity: 0; }
+          10% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { top: 95%; opacity: 0; }
+        }
+
+        @keyframes pulse-shield {
+          0%, 100% { filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.2)); stroke-width: 1.5; }
+          50% { filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.6)); stroke-width: 2; }
+        }
+
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0; }
+        }
+      </style>
+      <div id="initial-loader">
+        <div class="shield-container">
+          <svg class="shield-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          </svg>
+          <div class="scan-line"></div>
+        </div>
+        <div class="auth-text-container">
+          <div class="main-text">PROTEGO SECURE NETWORK</div>
+          <div class="sub-text">ESTABLISHING ENCRYPTED CONNECTION...</div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

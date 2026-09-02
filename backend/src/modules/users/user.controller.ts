@@ -1,0 +1,55 @@
+import { Request, Response, NextFunction } from 'express';
+import { UserService } from './user.service';
+import { sendSuccess } from '../../shared/utils/response';
+import { AuthRequest } from '../../shared/middlewares/auth.middleware';
+
+export class UserController {
+  private userService: UserService;
+
+  constructor() {
+    this.userService = new UserService();
+  }
+
+  getMe = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const user = await this.userService.getProfile(req.user!.id);
+      sendSuccess(res, 200, user, 'Profile retrieved successfully');
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  updateMe = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const data = { ...req.body };
+      if (req.file) {
+        data.avatar_url = `/uploads/${req.file.filename}`;
+      }
+      const user = await this.userService.updateProfile(req.user!.id, data);
+      sendSuccess(res, 200, user, 'Profile updated successfully');
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      
+      const result = await this.userService.getAllUsers(page, limit);
+      sendSuccess(res, 200, result, 'Users retrieved successfully');
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  deleteUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await this.userService.deleteUser(req.params.id as string);
+      sendSuccess(res, 200, null, 'User deleted successfully');
+    } catch (error) {
+      next(error);
+    }
+  };
+}

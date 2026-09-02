@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+body {
+  background-color: #f4f7f6;
+  color: #111827;
+}
+
+.leaflet-clean-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+@keyframes radar-pulse {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+@media print {
+  @page {
+    margin: 0;
+    /* This hides the browser's default URL, Date, and Page numbers */
+  }
+
+  body {
+    padding: 1.5cm;
+    /* Ensure content isn't right on the edge of the paper */
+  }
+}
