@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutGrid,
@@ -15,6 +15,7 @@ import {
 import { usePoliceStore } from '../../store/policeStore';
 import { useAuthStore } from '../../store/authStore';
 import Logo from '../common/Logo';
+import { getMediaUrl } from '../../utils/url';
 
 const navItems = [
   { path: '/police', label: 'Dashboard', icon: LayoutGrid },
@@ -37,13 +38,18 @@ const PoliceLayout: React.FC = () => {
   const [editPhone, setEditPhone] = useState(user?.phone || '');
   const [editAvatar, setEditAvatar] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarError, setAvatarError] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+
+  useEffect(() => {
+    setAvatarError(false);
+  }, [user?.avatar_url]);
 
   const openEditProfile = () => {
     setEditName(user?.full_name || '');
     setEditPhone(user?.phone || '');
     setEditAvatar(null);
-    setAvatarPreview(user?.avatar_url ? `http://localhost:5000${user.avatar_url}` : null);
+    setAvatarPreview(getMediaUrl(user?.avatar_url));
     setEditProfileModalOpen(true);
     setProfileOpen(false);
   };
@@ -165,8 +171,13 @@ const PoliceLayout: React.FC = () => {
               }}
               className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-slate-800 to-slate-950 flex items-center justify-center text-white text-[11px] sm:text-xs font-extrabold shadow-sm hover:scale-105 transition-transform overflow-hidden"
             >
-              {user?.avatar_url ? (
-                <img src={`http://localhost:5000${user.avatar_url}`} alt="Avatar" className="w-full h-full object-cover" />
+              {user?.avatar_url && !avatarError ? (
+                <img
+                  src={getMediaUrl(user.avatar_url) || ''}
+                  alt={user?.full_name || 'Avatar'}
+                  className="w-full h-full object-cover"
+                  onError={() => setAvatarError(true)}
+                />
               ) : (
                 initials
               )}
@@ -310,7 +321,12 @@ const PoliceLayout: React.FC = () => {
                 <div className="relative group cursor-pointer">
                   <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-slate-200 bg-slate-100 flex items-center justify-center relative">
                     {avatarPreview ? (
-                      <img src={avatarPreview} alt="Preview" className="w-full h-full object-cover" />
+                      <img
+                        src={avatarPreview}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                        onError={() => setAvatarPreview(null)}
+                      />
                     ) : (
                       <User className="w-8 h-8 text-slate-400" />
                     )}

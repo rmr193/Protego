@@ -15,6 +15,7 @@ import {
 import { useAuthStore } from '../../store/authStore';
 import { useCitizenStore } from '../../store/citizenStore';
 import Logo from '../common/Logo';
+import { getMediaUrl } from '../../utils/url';
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -36,7 +37,12 @@ const Navbar: React.FC = () => {
   const [editPhone, setEditPhone] = useState(user?.phone || '');
   const [editAvatar, setEditAvatar] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarError, setAvatarError] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+
+  useEffect(() => {
+    setAvatarError(false);
+  }, [user?.avatar_url]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -50,7 +56,7 @@ const Navbar: React.FC = () => {
     setEditName(user?.full_name || '');
     setEditPhone(user?.phone || '');
     setEditAvatar(null);
-    setAvatarPreview(user?.avatar_url ? `http://localhost:5000${user.avatar_url}` : null);
+    setAvatarPreview(getMediaUrl(user?.avatar_url));
     setEditProfileModalOpen(true);
     setShowUserMenu(false);
   };
@@ -198,9 +204,18 @@ const Navbar: React.FC = () => {
               className="flex items-center space-x-2 focus:outline-none"
             >
               <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border border-slate-300 shrink-0 bg-slate-900 text-white flex items-center justify-center font-bold text-xs">
-                {user?.avatar_url ? (
-                  <img src={`http://localhost:5000${user.avatar_url}`} alt="Avatar" className="w-full h-full object-cover" />
-                ) : user?.full_name ? user.full_name.charAt(0).toUpperCase() : <User className="w-4 h-4" />}
+                {user?.avatar_url && !avatarError ? (
+                  <img
+                    src={getMediaUrl(user.avatar_url) || ''}
+                    alt={user?.full_name || 'Avatar'}
+                    className="w-full h-full object-cover"
+                    onError={() => setAvatarError(true)}
+                  />
+                ) : user?.full_name ? (
+                  user.full_name.charAt(0).toUpperCase()
+                ) : (
+                  <User className="w-4 h-4" />
+                )}
               </div>
             </button>
 
@@ -278,7 +293,12 @@ const Navbar: React.FC = () => {
                 <div className="relative group cursor-pointer">
                   <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-slate-200 bg-slate-100 flex items-center justify-center relative">
                     {avatarPreview ? (
-                      <img src={avatarPreview} alt="Preview" className="w-full h-full object-cover" />
+                      <img
+                        src={avatarPreview}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                        onError={() => setAvatarPreview(null)}
+                      />
                     ) : (
                       <User className="w-8 h-8 text-slate-400" />
                     )}
