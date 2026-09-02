@@ -93,6 +93,10 @@ export const gdApi = {
   updateGDStatus: async (id: string, status: string) => {
     const res = await apiClient.patch(`/gd/${id}/status`, { status });
     return res.data;
+  },
+  getMapGDs: async (limit: number = 100) => {
+    const res = await apiClient.get('/gd/map', { params: { limit } });
+    return res.data;
   }
 };
 
@@ -111,6 +115,10 @@ export const crimeApi = {
   },
   getAllReports: async (params?: { page?: number; limit?: number; status?: string; crime_type?: string }) => {
     const res = await apiClient.get('/crimes', { params });
+    return res.data;
+  },
+  getMapReports: async (limit: number = 100) => {
+    const res = await apiClient.get('/crimes/map', { params: { limit } });
     return res.data;
   },
   getReportById: async (id: string) => {

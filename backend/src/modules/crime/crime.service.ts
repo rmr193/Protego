@@ -94,4 +94,8 @@ export class CrimeService {
 
     return updated;
   }
+
+  async getPublicMapReports(limit: number = 100) {
+    return this.crimeRepository.findMapReports(limit);
+  }
 }

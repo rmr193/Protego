@@ -58,5 +58,15 @@ export class GDController {
       next(error);
     }
   };
+
+  getMapGDs = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 100;
+      const gds = await this.gdService.getPublicMapGDs(limit);
+      sendSuccess(res, 200, gds);
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 

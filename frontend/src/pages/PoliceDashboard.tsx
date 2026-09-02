@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { usePoliceStore } from '../store/policeStore';
 import type { UnitStatus, IncidentStatus } from '../data/policeData';
+import { parseIncidentCoordinates } from '../utils/geoUtils';
 
 const statusStyles: Record<UnitStatus, string> = {
   'On-Patrol': 'bg-indigo-50 text-indigo-600',
@@ -448,7 +449,55 @@ const PoliceDashboard: React.FC = () => {
       markersRef.current.push(sosMarker);
     }
 
-  }, [units, sosActive, currentLocation]);
+    // 4. Plot Reported Crimes and General Diaries on Police Tactical Map
+    incidents.forEach(inc => {
+      const isCrime = inc.type === 'Crime Report';
+      const coords = parseIncidentCoordinates(inc.location, inc.id, 22.8717, 91.0879);
+      const isCritical = inc.severity === 'Critical';
+      const badgeColor = isCrime ? (isCritical ? '#dc2626' : '#ea580c') : '#2563eb';
+      const incTitle = inc.title || inc.type || 'Incident';
+      const iconLabel = isCrime ? `🚨 ${incTitle.slice(0, 14)}` : `📋 GD: ${incTitle.slice(0, 14)}`;
+
+      const incIcon = L.divIcon({
+        className: 'leaflet-clean-icon',
+        html: `
+          <div style="position:relative;display:flex;flex-direction:column;align-items:center;cursor:pointer;">
+            <div style="width:24px;height:24px;background:${badgeColor};border:2px solid #ffffff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;">
+              <span style="font-size:11px;">${isCrime ? '🚨' : '📋'}</span>
+            </div>
+            <div style="margin-top:-4px;background:#0f172a;color:#ffffff;font-size:8.5px;font-weight:900;padding:1px 5px;border-radius:9999px;white-space:nowrap;border:1px solid rgba(255,255,255,0.3);">
+              ${iconLabel}
+            </div>
+          </div>
+        `,
+        iconSize: [80, 44],
+        iconAnchor: [40, 15]
+      });
+
+      const incMarker = L.marker([coords.lat, coords.lng], { icon: incIcon }).addTo(map);
+      incMarker.bindPopup(`
+        <div style="font-family:sans-serif;min-width:200px;padding:4px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+            <strong style="font-size:12px;color:${isCrime ? '#dc2626' : '#2563eb'};">
+              ${isCrime ? '🚨 ' + incTitle : '📋 ' + incTitle}
+            </strong>
+            <span style="font-size:9px;font-weight:bold;background:${isCrime ? '#fee2e2' : '#dbeafe'};color:${isCrime ? '#991b1b' : '#1e40af'};padding:1px 5px;border-radius:4px;">
+              ${inc.status}
+            </span>
+          </div>
+          <p style="font-size:11px;color:#334155;margin:2px 0;"><b>Location:</b> ${inc.location}</p>
+          <p style="font-size:11px;color:#475569;margin:2px 0;"><b>Reporter:</b> ${inc.reporter}</p>
+          <p style="font-size:10px;color:#64748b;margin:4px 0;line-height:1.3;">"${inc.summary || 'Incident logged into queue.'}"</p>
+          <div style="margin-top:6px;padding-top:4px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:9px;color:#94a3b8;">${inc.time}</span>
+            <span style="font-size:9px;font-weight:bold;color:${badgeColor};">${inc.type}</span>
+          </div>
+        </div>
+      `);
+      markersRef.current.push(incMarker);
+    });
+
+  }, [units, sosActive, currentLocation, incidents]);
 
   const handleCenterOnLocation = () => {
     if (currentLocation && mapInstanceRef.current) {

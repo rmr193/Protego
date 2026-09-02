@@ -25,6 +25,13 @@ router.post('/', validate(createGDSchema), gdController.createGD);
 router.get('/', gdController.getAllGDs);
 
 /**
+ * @route   GET /api/v1/gd/map
+ * @desc    Get all public GD reports for map visualization
+ * @access  Private (All authenticated citizens & police)
+ */
+router.get('/map', gdController.getMapGDs);
+
+/**
  * @route   GET /api/v1/gd/:id
  * @desc    Get a specific GD by ID
  * @access  Private

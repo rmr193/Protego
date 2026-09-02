@@ -90,4 +90,8 @@ export class GDService {
 
     return updatedGD;
   }
+
+  async getPublicMapGDs(limit: number = 100) {
+    return this.gdRepository.findMapGDs(limit);
+  }
 }

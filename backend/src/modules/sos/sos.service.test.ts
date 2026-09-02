@@ -18,6 +18,9 @@ describe('SOSService', () => {
     } as any;
     sosService = new SOSService();
     (sosService as any).sosRepository = mockSOSRepo;
+    (sosService as any).notificationService = {
+      createNotification: jest.fn().mockResolvedValue({})
+    };
   });
 
   describe('triggerAlert', () => {

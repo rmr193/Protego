@@ -61,5 +61,15 @@ export class CrimeController {
       next(error);
     }
   };
+
+  getMapReports = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 100;
+      const reports = await this.crimeService.getPublicMapReports(limit);
+      sendSuccess(res, 200, reports);
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 

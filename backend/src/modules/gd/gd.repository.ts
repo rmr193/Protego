@@ -32,4 +32,19 @@ export class GDRepository {
       data
     });
   }
+
+  async findMapGDs(limit: number = 100) {
+    return prisma.generalDiary.findMany({
+      take: limit,
+      select: {
+        gd_id: true,
+        title: true,
+        description: true,
+        status: true,
+        created_at: true,
+        user: { select: { full_name: true } }
+      },
+      orderBy: { created_at: 'desc' }
+    });
+  }
 }

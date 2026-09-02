@@ -39,4 +39,20 @@ export class CrimeRepository {
       data: { status }
     });
   }
+
+  async findMapReports(limit: number = 100) {
+    return prisma.crimeReport.findMany({
+      take: limit,
+      select: {
+        report_id: true,
+        crime_type: true,
+        description: true,
+        location: true,
+        date_time: true,
+        status: true,
+        user: { select: { full_name: true } }
+      },
+      orderBy: { date_time: 'desc' }
+    });
+  }
 }

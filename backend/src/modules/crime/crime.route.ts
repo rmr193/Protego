@@ -17,12 +17,14 @@ router.use(authenticate);
  */
 router.post('/', validate(createCrimeReportSchema), crimeController.createReport);
 
-/**
- * @route   GET /api/v1/crimes
- * @desc    Get all Crime Reports
- * @access  Private (Citizens see own, Police see all)
- */
 router.get('/', crimeController.getAllReports);
+
+/**
+ * @route   GET /api/v1/crimes/map
+ * @desc    Get all public crime reports for map visualization
+ * @access  Private (All authenticated citizens & police)
+ */
+router.get('/map', crimeController.getMapReports);
 
 /**
  * @route   GET /api/v1/crimes/:id
