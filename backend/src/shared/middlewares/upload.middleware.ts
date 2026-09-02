@@ -3,9 +3,23 @@ import path from 'path';
 import { AppError } from '../utils/AppError';
 import { Request } from 'express';
 
+import fs from 'fs';
+import os from 'os';
+
+const getUploadDir = () => {
+  if (process.env.VERCEL) {
+    return os.tmpdir();
+  }
+  const uploadPath = path.join(__dirname, '../../../uploads');
+  if (!fs.existsSync(uploadPath)) {
+    fs.mkdirSync(uploadPath, { recursive: true });
+  }
+  return uploadPath;
+};
+
 const storage = multer.diskStorage({
   destination: (req: Request, file: Express.Multer.File, cb: any) => {
-    cb(null, path.join(__dirname, '../../../uploads'));
+    cb(null, getUploadDir());
   },
   filename: (req: Request, file: Express.Multer.File, cb: any) => {
     const ext = path.extname(file.originalname);

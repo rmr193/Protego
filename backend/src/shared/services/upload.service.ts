@@ -2,11 +2,24 @@ import multer from 'multer';
 import path from 'path';
 import { AppError } from '../utils/AppError';
 
+import fs from 'fs';
+import os from 'os';
+
+const getUploadDir = () => {
+  if (process.env.VERCEL) {
+    return os.tmpdir();
+  }
+  const uploadPath = path.join(__dirname, '../../../uploads');
+  if (!fs.existsSync(uploadPath)) {
+    fs.mkdirSync(uploadPath, { recursive: true });
+  }
+  return uploadPath;
+};
+
 // Setup storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // In production, this would be an S3 bucket or similar
-    cb(null, path.join(__dirname, '../../../uploads'));
+    cb(null, getUploadDir());
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);

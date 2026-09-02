@@ -15,7 +15,11 @@
   ],
   "routes": [
     {
-      "src": "/api/v1/(.*)",
+      "src": "/api/(.*)",
+      "dest": "backend/src/server.ts"
+    },
+    {
+      "src": "/health",
       "dest": "backend/src/server.ts"
     },
     {

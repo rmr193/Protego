@@ -19,12 +19,17 @@ export const logger = winston.createLogger({
   ]
 });
 
-// In production, add file transports or external services
-if (process.env.NODE_ENV === 'production') {
-  logger.add(
-    new winston.transports.File({ filename: 'logs/error.log', level: 'error' })
-  );
-  logger.add(
-    new winston.transports.File({ filename: 'logs/combined.log' })
-  );
+// In non-serverless production, add file transports
+if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
+  try {
+    logger.add(
+      new winston.transports.File({ filename: 'logs/error.log', level: 'error' })
+    );
+    logger.add(
+      new winston.transports.File({ filename: 'logs/combined.log' })
+    );
+  } catch (err) {
+    // Fallback silently if logs directory is not writable
+  }
 }
+

@@ -7,38 +7,43 @@ import { connectRedis } from './shared/services/redis.service';
 
 const server = http.createServer(app);
 
-// Initialize Socket.io
-initSocket(server);
+// Initialize Socket.io and start server only in standalone / non-Vercel environment
+if (!process.env.VERCEL) {
+  initSocket(server);
 
-const startServer = async () => {
-  try {
-    // Connect to Redis
-    await connectRedis();
+  const startServer = async () => {
+    try {
+      // Connect to Redis
+      await connectRedis();
 
-    // Start server
-    server.listen(env.PORT, () => {
-      logger.info(`Server is running on port ${env.PORT} in ${env.NODE_ENV} mode.`);
+      // Start server
+      server.listen(env.PORT, () => {
+        logger.info(`Server is running on port ${env.PORT} in ${env.NODE_ENV} mode.`);
+      });
+    } catch (error) {
+      logger.error('Failed to start server:', error);
+      process.exit(1);
+    }
+  };
+
+  startServer();
+
+  // Handle unhandled promise rejections
+  process.on('unhandledRejection', (err: any) => {
+    logger.error('UNHANDLED REJECTION! 💥 Shutting down...');
+    logger.error(err.name, err.message);
+    server.close(() => {
+      process.exit(1);
     });
-  } catch (error) {
-    logger.error('Failed to start server:', error);
-    process.exit(1);
-  }
-};
-
-startServer();
-
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (err: any) => {
-  logger.error('UNHANDLED REJECTION! 💥 Shutting down...');
-  logger.error(err.name, err.message);
-  server.close(() => {
-    process.exit(1);
   });
-});
 
-process.on('SIGTERM', () => {
-  logger.info('👋 SIGTERM RECEIVED. Shutting down gracefully');
-  server.close(() => {
-    logger.info('💥 Process terminated!');
+  process.on('SIGTERM', () => {
+    logger.info('👋 SIGTERM RECEIVED. Shutting down gracefully');
+    server.close(() => {
+      logger.info('💥 Process terminated!');
+    });
   });
-});
+}
+
+export default app;
+
