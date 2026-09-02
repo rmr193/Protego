@@ -6,7 +6,16 @@ export class SOSRepository {
       data: {
         ...data,
         status: 'ACTIVE'
-      }
+      },
+      include: { user: { select: { full_name: true, phone: true } } }
+    });
+  }
+
+  async findActiveAlertByUserId(userId: string) {
+    return prisma.sOSAlert.findFirst({
+      where: { user_id: userId, status: 'ACTIVE' },
+      include: { user: { select: { full_name: true, phone: true } } },
+      orderBy: { created_at: 'desc' }
     });
   }
 

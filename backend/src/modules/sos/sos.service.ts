@@ -47,9 +47,17 @@ export class SOSService {
     return this.sosRepository.getActiveAlerts();
   }
 
-  async resolveAlert(alertId: string) {
+  async getUserActiveAlert(userId: string) {
+    return this.sosRepository.findActiveAlertByUserId(userId);
+  }
+
+  async resolveAlert(alertId: string, userId?: string, role?: string) {
     const alert = await this.sosRepository.findAlertById(alertId);
     if (!alert) throw new AppError('SOS Alert not found', 404);
+
+    if (role === 'CITIZEN' && userId && alert.user_id !== userId) {
+      throw new AppError('You do not have permission to resolve this alert', 403);
+    }
 
     const resolved = await this.sosRepository.updateAlertStatus(alertId, 'RESOLVED');
 

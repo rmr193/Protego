@@ -107,6 +107,14 @@ const CitizenDashboard: React.FC = () => {
     }
   }, [precinctModalOpen]);
 
+  // Immediately close modal & clear details when SOS is resolved
+  useEffect(() => {
+    if (!activeSos) {
+      setSosActiveModal(false);
+      setSosDetails(null);
+    }
+  }, [activeSos]);
+
   const handleSosClick = async () => {
     let userLat = 22.8717;
     let userLng = 91.0879;

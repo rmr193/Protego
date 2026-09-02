@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { gdApi, crimeApi, sosApi, notificationApi } from '../services/api';
 import { subscribeToEvents } from '../services/socket';
+import { broadcastSosState, subscribeToSosBroadcast } from '../utils/sosBroadcast';
 
 export interface GeneralDiaryRecord {
   gd_id: string;
@@ -93,8 +94,8 @@ export const useCitizenStore = create<CitizenState>((set, get) => ({
   crimes: [],
   notifications: [],
   notificationsRead: false,
-  activeSos: false,
-  sosId: null,
+  activeSos: typeof window !== 'undefined' && localStorage.getItem('PROTEGO_SOS_ACTIVE') === 'true',
+  sosId: typeof window !== 'undefined' ? localStorage.getItem('PROTEGO_SOS_ID') : null,
   isLoading: false,
   error: null,
 
@@ -113,10 +114,11 @@ export const useCitizenStore = create<CitizenState>((set, get) => ({
   fetchCitizenData: async () => {
     set({ isLoading: true, error: null });
     try {
-      const [gdRes, crimeRes, notifRes] = await Promise.allSettled([
+      const [gdRes, crimeRes, notifRes, sosActiveRes] = await Promise.allSettled([
         gdApi.getAllGDs(),
         crimeApi.getAllReports(),
-        notificationApi.getNotifications()
+        notificationApi.getNotifications(),
+        sosApi.getMyActiveAlert()
       ]);
 
       const gds: GeneralDiaryRecord[] = gdRes.status === 'fulfilled' && gdRes.value.data?.gds ? gdRes.value.data.gds : get().gds;
@@ -153,6 +155,24 @@ export const useCitizenStore = create<CitizenState>((set, get) => ({
         });
       }
 
+      let activeSos = get().activeSos;
+      let sosId = get().sosId;
+
+      if (sosActiveRes.status === 'fulfilled') {
+        const activeAlert = sosActiveRes.value?.data;
+        if (activeAlert && activeAlert.status === 'ACTIVE') {
+          activeSos = true;
+          sosId = activeAlert.sos_id;
+          localStorage.setItem('PROTEGO_SOS_ACTIVE', 'true');
+          localStorage.setItem('PROTEGO_SOS_ID', sosId || '');
+        } else if (sosActiveRes.value?.status === 'success' && !activeAlert) {
+          activeSos = false;
+          sosId = null;
+          localStorage.setItem('PROTEGO_SOS_ACTIVE', 'false');
+          localStorage.removeItem('PROTEGO_SOS_ID');
+        }
+      }
+
       const hasUnread = dbNotifications.some(n => !n.read);
 
       set({ 
@@ -160,6 +180,8 @@ export const useCitizenStore = create<CitizenState>((set, get) => ({
         crimes, 
         notifications: dbNotifications, 
         notificationsRead: !hasUnread,
+        activeSos,
+        sosId,
         isLoading: false 
       });
     } catch (err: any) {
@@ -212,17 +234,29 @@ export const useCitizenStore = create<CitizenState>((set, get) => ({
         live_location: location,
         emergency_type: 'CRITICAL_PANIC_ALERT'
       });
-      const sosId = res.data?.sos_id || 'sos-active';
+      const sosId = res.data?.sos_id || res.sos_id || 'sos-active';
       set({ sosId, activeSos: true });
+      localStorage.setItem('PROTEGO_SOS_ACTIVE', 'true');
+      localStorage.setItem('PROTEGO_SOS_ID', sosId);
+      broadcastSosState(true, sosId);
       return { success: true };
     } catch (err: any) {
       set({ activeSos: true, sosId: 'sos-local' });
+      localStorage.setItem('PROTEGO_SOS_ACTIVE', 'true');
+      localStorage.setItem('PROTEGO_SOS_ID', 'sos-local');
+      broadcastSosState(true, 'sos-local');
       return { success: true };
     }
   },
 
   cancelEmergencySos: async () => {
-    const sosId = get().sosId;
+    const sosId = get().sosId || localStorage.getItem('PROTEGO_SOS_ID');
+    // Immediately stop local and broadcast state
+    set({ activeSos: false, sosId: null });
+    localStorage.setItem('PROTEGO_SOS_ACTIVE', 'false');
+    localStorage.removeItem('PROTEGO_SOS_ID');
+    broadcastSosState(false, null);
+
     if (sosId && sosId !== 'sos-local') {
       try {
         await sosApi.resolveAlert(sosId);
@@ -230,7 +264,6 @@ export const useCitizenStore = create<CitizenState>((set, get) => ({
         // Ignore
       }
     }
-    set({ activeSos: false, sosId: null });
   },
 
   saveGDDraft: draft => {
@@ -251,7 +284,27 @@ export const useCitizenStore = create<CitizenState>((set, get) => ({
   },
 
   initSocketListeners: () => {
-    return subscribeToEvents({
+    const unsubBroadcast = subscribeToSosBroadcast((active, id) => {
+      set({ activeSos: active, sosId: id });
+    });
+
+    // Serverless online fallback: check SOS status every 3s only while SOS is active
+    const sosPollTimer = setInterval(async () => {
+      if (!get().activeSos) return;
+      try {
+        const res = await sosApi.getMyActiveAlert();
+        if (res?.status === 'success' && (!res.data || res.data.status !== 'ACTIVE')) {
+          set({ activeSos: false, sosId: null });
+          localStorage.setItem('PROTEGO_SOS_ACTIVE', 'false');
+          localStorage.removeItem('PROTEGO_SOS_ID');
+          broadcastSosState(false, null);
+        }
+      } catch {
+        // Non-blocking
+      }
+    }, 3000);
+
+    const unsubSocket = subscribeToEvents({
       onGDUpdated: gd => {
         const isApproved = gd.status === 'APPROVED';
         const notif: CitizenNotification = {
@@ -291,17 +344,25 @@ export const useCitizenStore = create<CitizenState>((set, get) => ({
         }));
       },
       onNotification: notifData => {
+        if (notifData.type === 'SOS_RESOLVED') {
+          set({ activeSos: false, sosId: null });
+          localStorage.setItem('PROTEGO_SOS_ACTIVE', 'false');
+          localStorage.removeItem('PROTEGO_SOS_ID');
+          broadcastSosState(false, null);
+        }
         const mapped = mapDbNotification(notifData);
         set(state => ({
           notifications: [mapped, ...state.notifications.filter(n => n.id !== mapped.id)],
           notificationsRead: false
         }));
       },
-      onSOSResolved: alert => {
-        const currentSosId = get().sosId;
-        if (currentSosId && currentSosId === alert?.sos_id) {
-          set({ activeSos: false, sosId: null });
-        }
+      onSOSResolved: () => {
+        // Immediately terminate SOS broadcast on resolution
+        set({ activeSos: false, sosId: null });
+        localStorage.setItem('PROTEGO_SOS_ACTIVE', 'false');
+        localStorage.removeItem('PROTEGO_SOS_ID');
+        broadcastSosState(false, null);
+
         const notif: CitizenNotification = {
           id: `notif-sos-${Date.now()}`,
           title: 'SOS Alert Resolved 🛡️',
@@ -317,5 +378,11 @@ export const useCitizenStore = create<CitizenState>((set, get) => ({
         }));
       }
     });
+
+    return () => {
+      unsubBroadcast();
+      clearInterval(sosPollTimer);
+      unsubSocket();
+    };
   }
 }));

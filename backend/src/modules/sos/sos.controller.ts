@@ -42,9 +42,18 @@ export class SOSController {
     }
   };
 
-  resolveAlert = async (req: Request, res: Response, next: NextFunction) => {
+  getMyActiveAlert = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      const alert = await this.sosService.resolveAlert(req.params.id as string);
+      const alert = await this.sosService.getUserActiveAlert(req.user!.id);
+      sendSuccess(res, 200, alert);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  resolveAlert = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const alert = await this.sosService.resolveAlert(req.params.id as string, req.user?.id, req.user?.role);
       
       // Emit Socket.IO resolution event
       broadcastEvent('sos_resolved', alert);

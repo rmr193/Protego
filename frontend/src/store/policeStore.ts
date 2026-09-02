@@ -14,6 +14,8 @@ import type {
 } from '../data/policeData';
 import { crimeApi, sosApi, policeApi, analyticsApi, gdApi } from '../services/api';
 import { subscribeToEvents } from '../services/socket';
+import { broadcastSosState, subscribeToSosBroadcast } from '../utils/sosBroadcast';
+import { useCitizenStore } from './citizenStore';
 
 interface PoliceState {
   query: string;
@@ -202,17 +204,54 @@ export const usePoliceStore = create<PoliceState>((set, get) => ({
   cancelSos: (sosId?: string) => {
     const active = get().activeSosAlerts;
     const targetId = sosId || (active.length > 0 ? active[0].sos_id : null);
+    
+    // 1. Immediately update police state
     if (targetId) {
-      sosApi.resolveAlert(targetId).catch(() => { });
       const updated = active.filter(a => a.sos_id !== targetId);
       set({ activeSosAlerts: updated, sosActive: updated.length > 0 });
     } else {
       set({ sosActive: false, activeSosAlerts: [] });
     }
+
+    // 2. Immediately cancel citizen emergency SOS state in memory
+    try {
+      useCitizenStore.getState().cancelEmergencySos();
+    } catch {
+      // Non-blocking
+    }
+
+    // 3. Immediately broadcast across tabs and windows
+    broadcastSosState(false, targetId);
+
+    // 4. Send resolve command to backend API
+    if (targetId && targetId !== 'sos-local') {
+      sosApi.resolveAlert(targetId).catch(err => {
+        console.warn('Backend SOS resolve API warning:', err.message);
+      });
+    }
   },
 
   initSocketListeners: () => {
-    return subscribeToEvents({
+    const unsubBroadcast = subscribeToSosBroadcast(active => {
+      if (!active) {
+        set({ sosActive: false, activeSosAlerts: [] });
+      }
+    });
+
+    // Serverless online fallback: poll active alerts every 4s to sync cross-device alerts
+    const sosPollTimer = setInterval(async () => {
+      try {
+        const res = await sosApi.getActiveAlerts();
+        if (Array.isArray(res?.data)) {
+          const active = res.data.filter((a: any) => a.status === 'ACTIVE');
+          set({ activeSosAlerts: active, sosActive: active.length > 0 });
+        }
+      } catch {
+        // Non-blocking
+      }
+    }, 4000);
+
+    const unsubSocket = subscribeToEvents({
       onSOSAlert: alert => {
         set(state => ({
           sosActive: true,
@@ -221,7 +260,9 @@ export const usePoliceStore = create<PoliceState>((set, get) => ({
         }));
       },
       onSOSResolved: alert => {
-        const remaining = get().activeSosAlerts.filter(a => a.sos_id !== alert?.sos_id);
+        const remaining = alert?.sos_id
+          ? get().activeSosAlerts.filter(a => a.sos_id !== alert?.sos_id)
+          : [];
         set({
           activeSosAlerts: remaining,
           sosActive: remaining.length > 0
@@ -261,5 +302,11 @@ export const usePoliceStore = create<PoliceState>((set, get) => ({
         }));
       }
     });
+
+    return () => {
+      unsubBroadcast();
+      clearInterval(sosPollTimer);
+      unsubSocket();
+    };
   }
 }));

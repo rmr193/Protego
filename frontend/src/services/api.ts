@@ -155,6 +155,10 @@ export const sosApi = {
     const res = await apiClient.get('/sos/active');
     return res.data;
   },
+  getMyActiveAlert: async () => {
+    const res = await apiClient.get('/sos/my-active');
+    return res.data;
+  },
   resolveAlert: async (id: string) => {
     const res = await apiClient.patch(`/sos/${id}/resolve`);
     return res.data;

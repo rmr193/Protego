@@ -3,6 +3,7 @@ import { SOSRepository } from './sos.repository';
 import { AppError } from '../../shared/utils/AppError';
 
 jest.mock('./sos.repository');
+jest.mock('../notification/notification.service');
 
 describe('SOSService', () => {
   let sosService: SOSService;
