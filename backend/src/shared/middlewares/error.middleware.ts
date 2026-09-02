@@ -15,18 +15,17 @@ export const globalErrorHandler = (err: any, req: Request, res: Response, next: 
       stack: err.stack
     });
   } else {
-    // Production Mode
-    if (err.isOperational) {
+    // Production / General Mode
+    if (err.isOperational || (err.statusCode && err.statusCode < 500)) {
       res.status(err.statusCode).json({
-        status: err.status,
+        status: err.status || 'fail',
         message: err.message
       });
     } else {
-      // Programming or other unknown error: don't leak error details
       logger.error('ERROR 💥', err);
-      res.status(500).json({
+      res.status(err.statusCode || 500).json({
         status: 'error',
-        message: 'Something went very wrong!'
+        message: err.message || 'Internal Server Error'
       });
     }
   }

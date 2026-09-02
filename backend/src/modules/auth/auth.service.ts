@@ -12,8 +12,9 @@ export class AuthService {
   }
 
   private signTokens(user: any) {
+    const roleName = user.role?.name || (typeof user.role === 'string' ? user.role : 'CITIZEN');
     const accessToken = jwt.sign(
-      { id: user.user_id, role: user.role.name },
+      { id: user.user_id, role: roleName },
       env.JWT_SECRET,
       { expiresIn: env.JWT_EXPIRES_IN as any }
     );
@@ -28,7 +29,8 @@ export class AuthService {
   }
 
   async register(data: any) {
-    const existingUser = await this.authRepository.findUserByEmail(data.email);
+    const email = data.email.trim().toLowerCase();
+    const existingUser = await this.authRepository.findUserByEmail(email);
     if (existingUser) {
       throw new AppError('Email already in use', 400);
     }
@@ -42,6 +44,7 @@ export class AuthService {
     
     const newUser = await this.authRepository.createUser({
       ...data,
+      email,
       password: hashedPassword,
       role_id: defaultRole.role_id
     });
@@ -60,7 +63,8 @@ export class AuthService {
   }
 
   async login(data: any) {
-    const user = await this.authRepository.findUserByEmail(data.email);
+    const email = data.email.trim().toLowerCase();
+    const user = await this.authRepository.findUserByEmail(email);
     if (!user || !(await bcrypt.compare(data.password, user.password))) {
       throw new AppError('Incorrect email or password', 401);
     }

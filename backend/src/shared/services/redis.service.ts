@@ -7,29 +7,32 @@ const memoryCache = new Map<string, string>();
 
 let isRedisConnected = false;
 
-export const redisClient = createClient({
-  url: env.REDIS_URL,
-  socket: {
-    connectTimeout: 1500,
-    reconnectStrategy: false
-  }
-});
+export const redisClient = env.REDIS_URL
+  ? createClient({
+      url: env.REDIS_URL,
+      socket: {
+        connectTimeout: 1500,
+        reconnectStrategy: false
+      }
+    })
+  : null;
 
-redisClient.on('error', (err) => {
-  // Log once and operate gracefully
-  if (isRedisConnected) {
-    logger.error('Redis Client Error', err);
-  }
-});
+if (redisClient) {
+  redisClient.on('error', (err) => {
+    if (isRedisConnected) {
+      logger.error('Redis Client Error', err);
+    }
+  });
 
-redisClient.on('connect', () => {
-  isRedisConnected = true;
-  logger.info('Redis Client Connected');
-});
+  redisClient.on('connect', () => {
+    isRedisConnected = true;
+    logger.info('Redis Client Connected');
+  });
+}
 
 export const connectRedis = async () => {
+  if (!redisClient) return;
   try {
-    // Attempt connection without blocking main thread
     redisClient.connect().catch(() => {
       isRedisConnected = false;
       logger.warn('Redis server not reachable, using in-memory cache fallback.');
@@ -40,7 +43,7 @@ export const connectRedis = async () => {
 };
 
 export const cacheGet = async (key: string): Promise<string | null> => {
-  if (isRedisConnected && redisClient.isOpen) {
+  if (isRedisConnected && redisClient?.isOpen) {
     try {
       return await redisClient.get(key);
     } catch {
@@ -52,7 +55,7 @@ export const cacheGet = async (key: string): Promise<string | null> => {
 
 export const cacheSet = async (key: string, value: string, expireSeconds?: number): Promise<void> => {
   memoryCache.set(key, value);
-  if (isRedisConnected && redisClient.isOpen) {
+  if (isRedisConnected && redisClient?.isOpen) {
     try {
       if (expireSeconds) {
         await redisClient.set(key, value, { EX: expireSeconds });

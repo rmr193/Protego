@@ -41,6 +41,7 @@ export class AuthController {
 
       sendSuccess(res, 200, { user: result.user, accessToken: result.accessToken }, 'Login successful');
     } catch (error) {
+      console.error('💥 LOGIN ERROR DETAILS:', error);
       next(error);
     }
   };
