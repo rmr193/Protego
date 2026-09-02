@@ -5,6 +5,7 @@ import { Navigation, RefreshCw, Eye, EyeOff, MapPin, ShieldAlert, FileText, Shie
 import { crimeApi, gdApi, policeApi } from '../services/api';
 import { subscribeToEvents } from '../services/socket';
 import { parseIncidentCoordinates } from '../utils/geoUtils';
+import { NOAKHALI_POLICE_STATIONS, type NoakhaliPoliceStation } from '../data/noakhaliPoliceData';
 
 interface LiveIncident {
   id: string;
@@ -30,32 +31,14 @@ interface LiveSafeSanctuary {
   phone: string;
 }
 
-const DEFAULT_STATIONS: LiveSafeSanctuary[] = [
-  {
-    id: 'station-1',
-    name: 'Maijdee Central Police HQ',
-    location: 'Maijdee Court Road, Noakhali',
-    lat: 22.8717,
-    lng: 91.0879,
-    phone: '+8801713374820'
-  },
-  {
-    id: 'station-2',
-    name: 'Sonapur Model Police Station',
-    location: 'Sonapur Bazar, Noakhali',
-    lat: 22.8250,
-    lng: 91.1000,
-    phone: '+8801713374821'
-  },
-  {
-    id: 'station-3',
-    name: 'Sudharam Model Thana Sanctuary',
-    location: 'Maijdee Bazar Road, Noakhali',
-    lat: 22.8690,
-    lng: 91.0910,
-    phone: '+8801713374822'
-  }
-];
+const DEFAULT_STATIONS: LiveSafeSanctuary[] = NOAKHALI_POLICE_STATIONS.map((s: NoakhaliPoliceStation) => ({
+  id: s.id,
+  name: s.name,
+  location: s.address,
+  lat: s.lat,
+  lng: s.lng,
+  phone: s.phone
+}));
 
 const LiveMap: React.FC = () => {
   const mapContainerRef = useRef<HTMLDivElement>(null);

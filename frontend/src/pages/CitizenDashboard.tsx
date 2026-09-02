@@ -11,7 +11,9 @@ import {
   CheckCircle2, 
   Clock, 
   X,
-  RefreshCw
+  RefreshCw,
+  Phone,
+  Search
 } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
@@ -19,25 +21,12 @@ import LiveMap from '../components/LiveMap';
 import { initialUnits } from '../data/policeData';
 import { useCitizenStore } from '../store/citizenStore';
 import { useAuthStore } from '../store/authStore';
-
-const BD_STATIONS = [
-  { name: '1st Precinct Police Station', address: 'Lower Manhattan • NY 10013', phone: '+12123340611', lat: 40.7200, lon: -74.0066 },
-  { name: '5th Precinct Police Station', address: 'Chinatown • NY 10013', phone: '+12123340711', lat: 40.7161, lon: -73.9975 },
-  { name: '9th Precinct Police Station', address: 'East Village • NY 10003', phone: '+12124777811', lat: 40.7258, lon: -73.9829 },
-  { name: '13th Precinct Police Station', address: 'Gramercy Park • NY 10010', phone: '+12124777411', lat: 40.7351, lon: -73.9825 },
-  { name: 'Midtown South Precinct', address: 'Times Square • NY 10018', phone: '+12122399811', lat: 40.7527, lon: -73.9922 },
-  { name: 'Central Park Precinct', address: 'Central Park • NY 10024', phone: '+12125704820', lat: 40.7788, lon: -73.9673 },
-  { name: '19th Precinct Police Station', address: 'Upper East Side • NY 10065', phone: '+12124520600', lat: 40.7674, lon: -73.9654 }
-];
-
-function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
-  const p = 0.017453292519943295;
-  const c = Math.cos;
-  const a = 0.5 - c((lat2 - lat1) * p)/2 + 
-          c(lat1 * p) * c(lat2 * p) * 
-          (1 - c((lon2 - lon1) * p))/2;
-  return 12742 * Math.asin(Math.sqrt(a));
-}
+import { 
+  NOAKHALI_POLICE_STATIONS, 
+  findNearestPoliceStation, 
+  getDistanceKm,
+  type NoakhaliPoliceStation 
+} from '../data/noakhaliPoliceData';
 
 const CitizenDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -58,40 +47,48 @@ const CitizenDashboard: React.FC = () => {
   const [sosDetails, setSosDetails] = useState<{lat: string, lng: string, unit?: string, eta?: string} | null>(null);
   const [selectedCase, setSelectedCase] = useState<any | null>(null);
 
-  const [nearestStation, setNearestStation] = useState<typeof BD_STATIONS[0] | null>(null);
+  const [nearestStationInfo, setNearestStationInfo] = useState<{
+    station: NoakhaliPoliceStation;
+    distanceKm: number;
+  } | null>(null);
+  const [precinctSearch, setPrecinctSearch] = useState('');
   const [isLocating, setIsLocating] = useState(false);
-  const [locationError, setLocationError] = useState('');
 
   const locateNearestStation = () => {
     setIsLocating(true);
-    setLocationError('');
-    if (!navigator.geolocation) {
-      setLocationError('Geolocation not supported');
+
+    const resolveWithCoords = (userLat: number, userLon: number) => {
+      const nearest = findNearestPoliceStation(userLat, userLon);
+      setNearestStationInfo(nearest);
       setIsLocating(false);
+    };
+
+    // Check saved coordinates first
+    const saved = localStorage.getItem('PROTEGO_CURRENT_GPS_LOCATION');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.lat && parsed.lng) {
+          resolveWithCoords(parsed.lat, parsed.lng);
+          return;
+        }
+      } catch {}
+    }
+
+    if (!navigator.geolocation) {
+      resolveWithCoords(22.8717, 91.0879);
       return;
     }
+
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const userLat = pos.coords.latitude;
-        const userLon = pos.coords.longitude;
-        let minDistance = Infinity;
-        let nearest = BD_STATIONS[0];
-        
-        BD_STATIONS.forEach(station => {
-          const d = getDistance(userLat, userLon, station.lat, station.lon);
-          if (d < minDistance) {
-            minDistance = d;
-            nearest = station;
-          }
-        });
-        
-        setNearestStation(nearest);
-        setIsLocating(false);
+        resolveWithCoords(pos.coords.latitude, pos.coords.longitude);
       },
       () => {
-        setLocationError('Please enable location access');
-        setIsLocating(false);
-      }
+        // Default to Noakhali District HQ coords
+        resolveWithCoords(22.8717, 91.0879);
+      },
+      { timeout: 7000 }
     );
   };
 
@@ -102,7 +99,7 @@ const CitizenDashboard: React.FC = () => {
   }, [fetchCitizenData, initSocketListeners]);
 
   useEffect(() => {
-    if (precinctModalOpen && !nearestStation && !locationError) {
+    if (precinctModalOpen && !nearestStationInfo) {
       locateNearestStation();
     }
   }, [precinctModalOpen]);
@@ -131,7 +128,7 @@ const CitizenDashboard: React.FC = () => {
     let closestUnit = initialUnits[0];
     initialUnits.forEach(u => {
       if (u.status === 'On-Patrol') {
-        const d = getDistance(userLat, userLng, u.lat, u.lng);
+        const d = getDistanceKm(userLat, userLng, u.lat, u.lng);
         if (d < minDistance) {
           minDistance = d;
           closestUnit = u;
@@ -226,7 +223,7 @@ const CitizenDashboard: React.FC = () => {
               <Radio className="w-8 h-8 text-rose-200 shrink-0" />
               <div>
                 <h3 className="text-base font-black uppercase tracking-wider">Emergency SOS Transmission Active</h3>
-                <p className="text-xs text-rose-100 mt-0.5">Your live telemetry & coordinates are streaming directly to Metropolis Central Police Dispatch.</p>
+                <p className="text-xs text-rose-100 mt-0.5">Your live telemetry & coordinates are streaming directly to Noakhali District Police Dispatch & nearest patrol units.</p>
               </div>
             </div>
             <button
@@ -433,81 +430,202 @@ const CitizenDashboard: React.FC = () => {
       {/* Contact Precinct Modal */}
       {precinctModalOpen && (
         <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border border-slate-200">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-              <div className="flex items-center space-x-2">
-                <Building2 className="w-5 h-5 text-slate-900" />
-                <h3 className="text-base font-extrabold text-slate-900">Local Precinct Directory</h3>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-5 sm:p-6 border border-slate-200 max-h-[90vh] flex flex-col">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3 shrink-0">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                  <Building2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-extrabold text-slate-900">Noakhali Police Directory</h3>
+                  <p className="text-[10px] text-slate-500">Live GPS Location-Based Nearest Thana & Helplines</p>
+                </div>
               </div>
-              <button onClick={() => setPrecinctModalOpen(false)} className="text-slate-400 hover:text-slate-700 p-1">
+              <button onClick={() => setPrecinctModalOpen(false)} className="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100 transition">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-3">
-              <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
-                <h4 className="text-xs font-black text-slate-900">Dhaka Metropolitan Police (DMP) HQ</h4>
-                <p className="text-[11px] text-slate-500">Ramna • 36 Shahid Capt. Mansur Ali Sarani</p>
-                <div className="mt-2 flex items-center justify-between text-xs">
-                  <span className="font-bold text-slate-700">+880-2-223381967</span>
-                  <a href="tel:+8802223381967" className="px-2.5 py-1 bg-slate-900 text-white rounded font-bold text-[10px]">Call HQ</a>
-                </div>
-              </div>
+            {/* Search Box */}
+            <div className="relative mb-3 shrink-0">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={precinctSearch}
+                onChange={e => setPrecinctSearch(e.target.value)}
+                placeholder="Search thana or upazila (e.g. Sudharam, Sonapur, Begumganj)..."
+                className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
+              />
+            </div>
 
-              <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 relative overflow-hidden min-h-[90px] flex flex-col justify-center">
+            {/* Scrollable Content */}
+            <div className="space-y-3 overflow-y-auto pr-1 flex-1">
+              
+              {/* 1. Location-Based Nearest Thana */}
+              <div className="p-3.5 bg-blue-50/70 rounded-xl border border-blue-200 relative overflow-hidden">
                 {isLocating && (
-                  <div className="absolute inset-0 bg-slate-50/80 backdrop-blur-sm flex items-center justify-center z-10">
-                    <div className="flex items-center space-x-1.5 text-blue-600 text-[10px] font-bold">
-                      <RefreshCw className="w-3 h-3 animate-spin" />
-                      <span>Locating Nearest...</span>
+                  <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10">
+                    <div className="flex items-center space-x-1.5 text-blue-600 text-xs font-bold">
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Pinpointing Nearest Noakhali Thana...</span>
                     </div>
                   </div>
                 )}
-                
-                {locationError ? (
-                  <div className="text-center">
-                    <p className="text-[10px] text-rose-600 font-bold mb-1">{locationError}</p>
-                    <button onClick={locateNearestStation} className="text-[10px] bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 rounded font-bold">
-                      Retry
-                    </button>
-                  </div>
-                ) : nearestStation ? (
+
+                {nearestStationInfo ? (
                   <>
-                    <div className="flex items-center space-x-1.5 mb-1">
-                      <Map className="w-3.5 h-3.5 text-blue-600" />
-                      <span className="text-[9px] font-black uppercase text-blue-600 tracking-wider">Nearest to you</span>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center space-x-1.5">
+                        <Map className="w-3.5 h-3.5 text-blue-600" />
+                        <span className="text-[9px] font-black uppercase text-blue-700 tracking-wider">
+                          📍 Nearest to your location ({nearestStationInfo.distanceKm} km)
+                        </span>
+                      </div>
+                      <button
+                        onClick={locateNearestStation}
+                        className="text-[9px] font-bold text-blue-600 hover:text-blue-800 flex items-center space-x-1"
+                        title="Recalculate GPS"
+                      >
+                        <RefreshCw className="w-2.5 h-2.5" />
+                        <span>Re-detect</span>
+                      </button>
                     </div>
-                    <h4 className="text-xs font-black text-slate-900">{nearestStation.name}</h4>
-                    <p className="text-[11px] text-slate-500">{nearestStation.address}</p>
-                    <div className="mt-2 flex items-center justify-between text-xs">
-                      <span className="font-bold text-slate-700">{nearestStation.phone}</span>
-                      <a href={`tel:${nearestStation.phone.replace(/[^0-9+]/g, '')}`} className="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded font-bold text-[10px] transition">Call Station</a>
+
+                    <h4 className="text-xs font-black text-slate-900">{nearestStationInfo.station.name}</h4>
+                    <p className="text-[11px] text-slate-600">{nearestStationInfo.station.address}</p>
+
+                    <div className="mt-2.5 pt-2 border-t border-blue-200/60 flex flex-wrap items-center justify-between gap-2">
+                      <div className="text-[11px] space-y-0.5">
+                        <p className="font-bold text-slate-800 flex items-center space-x-1">
+                          <Phone className="w-3 h-3 text-blue-600" />
+                          <span>OC: {nearestStationInfo.station.phone}</span>
+                        </p>
+                        <p className="text-slate-500 text-[10px]">
+                          Duty Officer: {nearestStationInfo.station.dutyOfficerPhone}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center space-x-1.5">
+                        <a
+                          href={`tel:${nearestStationInfo.station.phone.replace(/[^0-9+]/g, '')}`}
+                          className="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold text-[10px] shadow-sm transition inline-flex items-center space-x-1"
+                        >
+                          <Phone className="w-2.5 h-2.5" />
+                          <span>Call OC</span>
+                        </a>
+                        <a
+                          href={`tel:${nearestStationInfo.station.dutyOfficerPhone.replace(/[^0-9+]/g, '')}`}
+                          className="px-2.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-bold text-[10px] shadow-sm transition inline-flex items-center space-x-1"
+                        >
+                          <span>Duty Officer</span>
+                        </a>
+                      </div>
                     </div>
                   </>
                 ) : (
-                  <div className="text-center">
-                    <button onClick={locateNearestStation} className="text-[10px] bg-blue-50 hover:bg-blue-100 text-blue-700 px-2 py-1 rounded font-bold inline-flex items-center space-x-1 transition">
+                  <div className="text-center py-2">
+                    <p className="text-xs text-slate-600 mb-1">Detecting nearest Noakhali police station...</p>
+                    <button
+                      onClick={locateNearestStation}
+                      className="text-xs bg-blue-600 text-white px-3 py-1 rounded-lg font-bold inline-flex items-center space-x-1"
+                    >
                       <Map className="w-3 h-3" />
-                      <span>Find Nearest Station</span>
+                      <span>Locate My Thana</span>
                     </button>
                   </div>
                 )}
               </div>
 
-              <div className="p-3.5 bg-rose-50 rounded-xl border border-rose-200">
-                <h4 className="text-xs font-black text-rose-900">24/7 National Emergency Hotline</h4>
-                <p className="text-[11px] text-rose-600">Police, Ambulance, Fire Rescue Dispatch</p>
-                <div className="mt-2 flex items-center justify-between text-xs">
-                  <span className="font-black text-rose-700">Dial 999</span>
-                  <a href="tel:999" className="px-2.5 py-1 bg-rose-600 text-white rounded font-bold text-[10px]">Emergency Dial</a>
+              {/* 2. Noakhali District Police SP Office & Control Room */}
+              <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-[9px] font-black uppercase text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded tracking-wider">
+                      District Central HQ
+                    </span>
+                    <h4 className="text-xs font-black text-slate-900 mt-1">Noakhali District Police SP Office</h4>
+                    <p className="text-[11px] text-slate-500">Maijdee Court Road • 24/7 District Police Control Room</p>
+                  </div>
+                </div>
+
+                <div className="mt-2.5 pt-2 border-t border-slate-200 flex items-center justify-between text-xs">
+                  <div>
+                    <span className="font-bold text-slate-700 text-xs">+8801320-115898</span>
+                    <span className="text-[10px] text-slate-400 ml-1.5">• Landline: 0321-61450</span>
+                  </div>
+                  <a
+                    href="tel:+8801320115898"
+                    className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-bold text-[10px] transition inline-flex items-center space-x-1"
+                  >
+                    <Phone className="w-2.5 h-2.5" />
+                    <span>Call Control Room</span>
+                  </a>
                 </div>
               </div>
+
+              {/* 3. National Emergency Hotline */}
+              <div className="p-3 bg-rose-50 rounded-xl border border-rose-200 flex items-center justify-between">
+                <div>
+                  <h4 className="text-xs font-black text-rose-900">National Emergency Hotline 999</h4>
+                  <p className="text-[10px] text-rose-600">Immediate Police, Fire & Medical Rescue Dispatch</p>
+                </div>
+                <a
+                  href="tel:999"
+                  className="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg font-black text-xs shadow-sm transition"
+                >
+                  Dial 999
+                </a>
+              </div>
+
+              {/* 4. Filtered List of All Noakhali Police Stations */}
+              <div className="pt-2">
+                <h5 className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2">
+                  All Upazila Police Stations ({NOAKHALI_POLICE_STATIONS.length})
+                </h5>
+
+                <div className="space-y-2">
+                  {NOAKHALI_POLICE_STATIONS
+                    .filter((s: NoakhaliPoliceStation) => {
+                      const query = precinctSearch.trim().toLowerCase();
+                      if (!query) return true;
+                      return (
+                        s.name.toLowerCase().includes(query) ||
+                        s.upazila.toLowerCase().includes(query) ||
+                        s.address.toLowerCase().includes(query)
+                      );
+                    })
+                    .map((station: NoakhaliPoliceStation) => (
+                      <div key={station.id} className="p-2.5 bg-white rounded-lg border border-slate-200 hover:border-slate-300 transition flex items-center justify-between text-xs">
+                        <div>
+                          <div className="flex items-center space-x-1.5">
+                            <h6 className="font-bold text-slate-800 text-xs">{station.name}</h6>
+                          </div>
+                          <p className="text-[10px] text-slate-500">{station.address}</p>
+                          <p className="text-[10px] text-blue-600 font-medium mt-0.5">
+                            OC: {station.phone} • Duty: {station.dutyOfficerPhone}
+                          </p>
+                        </div>
+                        <a
+                          href={`tel:${station.phone.replace(/[^0-9+]/g, '')}`}
+                          className="shrink-0 px-2.5 py-1 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 border border-slate-200 rounded-md font-bold text-[10px] transition"
+                        >
+                          Call
+                        </a>
+                      </div>
+                    ))}
+                </div>
+              </div>
+
             </div>
 
-            <div className="mt-5 text-right">
+            {/* Modal Footer */}
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between shrink-0">
+              <span className="text-[10px] text-slate-400 font-medium">Source: Bangladesh Police, Noakhali District</span>
               <button
                 onClick={() => setPrecinctModalOpen(false)}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition"
+                className="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition"
               >
                 Close
               </button>

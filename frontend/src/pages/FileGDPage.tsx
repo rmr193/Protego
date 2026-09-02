@@ -711,7 +711,7 @@ LEDGER VERIFICATION: SEC-HASH-${Date.now()}
 
       {/* Footer Support Notice */}
       <footer className="py-3.5 sm:py-4 px-4 text-center text-xs text-slate-500 border-t border-slate-200/60 bg-[#f4f7f6] print:hidden">
-        Need assistance? Contact the dispatch hotline at <span className="font-bold text-slate-800">1-800-PROTEGO</span> or visit your local police precinct.
+        Need assistance? Contact Noakhali Police Dispatch Control Room at <span className="font-bold text-slate-800">+8801320-115898</span> or National Emergency <span className="font-bold text-rose-700">999</span>.
       </footer>
 
       {/* Floating SOS Action Button */}

@@ -32,7 +32,18 @@ export interface Station {
   officers: number;
 }
 
-export const initialStations: Station[] = [];
+export const initialStations: Station[] = [
+  { name: 'Noakhali District Police SP Office', sector: 'Maijdee Court, Noakhali', contact: '+8801320-115898', units: 8, officers: 24 },
+  { name: 'Sudharam Model Police Station', sector: 'Maijdee Bazar Road, Noakhali Sadar', contact: '+8801320-115900', units: 6, officers: 18 },
+  { name: 'Sonapur Police Outpost / Camp', sector: 'Sonapur Zero Point, Noakhali', contact: '+8801320-115905', units: 4, officers: 12 },
+  { name: 'Begumganj Model Police Station', sector: 'Chowmuhani, Begumganj, Noakhali', contact: '+8801320-115920', units: 6, officers: 20 },
+  { name: 'Kabirhat Police Station', sector: 'Kabirhat Bazar, Noakhali', contact: '+8801320-115940', units: 4, officers: 14 },
+  { name: 'Companiganj Police Station', sector: 'Basurhat, Companiganj, Noakhali', contact: '+8801320-115960', units: 5, officers: 16 },
+  { name: 'Chatkhil Police Station', sector: 'Chatkhil Main Road, Noakhali', contact: '+8801320-115980', units: 4, officers: 14 },
+  { name: 'Senbagh Police Station', sector: 'Senbagh Town, Noakhali', contact: '+8801320-116000', units: 4, officers: 14 },
+  { name: 'Char Jabbar Police Station', sector: 'Subarnachar, Noakhali', contact: '+8801320-116020', units: 4, officers: 12 },
+  { name: 'Hatiya Police Station', sector: 'Oskhali, Hatiya Island, Noakhali', contact: '+8801320-116040', units: 5, officers: 16 }
+];
 
 export interface ReportFile {
   id: string;
@@ -43,19 +54,19 @@ export interface ReportFile {
 }
 
 export const initialUnits: Unit[] = [
-  { unitId: 'CHARLIE-99', status: 'On-Patrol', sector: 'Westside', eta: '-', lat: 22.8762, lng: 91.0824 },
-  { unitId: 'TANGO-11', status: 'Responding', sector: 'Uptown', eta: '04m 30s', lat: 22.8742, lng: 91.0929 },
-  { unitId: 'XRAY-07', status: 'In-Station', sector: 'HQ', eta: '-', lat: 22.8677, lng: 91.0849 },
-  { unitId: 'ZULU-42', status: 'On-Patrol', sector: 'Financial District', eta: '-', lat: 22.8777, lng: 91.0844 },
-  { unitId: 'ROMEO-5', status: 'On-Patrol', sector: 'Midtown', eta: '-', lat: 22.8697, lng: 91.0949 }
+  { unitId: 'CHARLIE-99', status: 'On-Patrol', sector: 'Maijdee Court', eta: '-', lat: 22.8762, lng: 91.0824 },
+  { unitId: 'TANGO-11', status: 'Responding', sector: 'Sonapur Zero Point', eta: '04m 30s', lat: 22.8742, lng: 91.0929 },
+  { unitId: 'XRAY-07', status: 'In-Station', sector: 'Sudharam HQ', eta: '-', lat: 22.8677, lng: 91.0849 },
+  { unitId: 'ZULU-42', status: 'On-Patrol', sector: 'Chowmuhani Sector', eta: '-', lat: 22.8777, lng: 91.0844 },
+  { unitId: 'ROMEO-5', status: 'On-Patrol', sector: 'Kabirhat Highway', eta: '-', lat: 22.8697, lng: 91.0949 }
 ];
 
 export const initialIncidents: IncidentRecord[] = [
-  { id: 'SOS-9912', title: 'Panic Button Triggered', type: 'SOS', location: 'Times Square, Midtown', time: '1 min ago', severity: 'Critical', status: 'NEW' },
-  { id: 'CR-2027-111', title: 'Vehicle Theft', type: 'Crime Report', location: 'Park Ave, Sector 4', time: '20 mins ago', severity: 'High', status: 'DISPATCHED' },
-  { id: 'GD-2027-205', title: 'Lost Passport', type: 'General Diary', location: 'JFK Airport Terminal 4', time: '1 hr ago', severity: 'Moderate', status: 'NEW' },
-  { id: 'CR-2027-302', title: 'Vandalism', type: 'Crime Report', location: 'West End Mall', time: '3 hrs ago', severity: 'High', status: 'NEW' },
-  { id: 'GD-2027-404', title: 'Noise Complaint', type: 'General Diary', location: 'East Village Residential', time: '5 hrs ago', severity: 'Moderate', status: 'RESOLVED' }
+  { id: 'SOS-9912', title: 'Panic Button Triggered', type: 'SOS', location: 'Maijdee Bazar, Noakhali Sadar', time: '1 min ago', severity: 'Critical', status: 'NEW' },
+  { id: 'CR-2027-111', title: 'Vehicle Theft', type: 'Crime Report', location: 'Sonapur Zero Point, Noakhali', time: '20 mins ago', severity: 'High', status: 'DISPATCHED' },
+  { id: 'GD-2027-205', title: 'Lost National ID', type: 'General Diary', location: 'Maijdee Court Complex', time: '1 hr ago', severity: 'Moderate', status: 'NEW' },
+  { id: 'CR-2027-302', title: 'Vandalism', type: 'Crime Report', location: 'Chowmuhani Rail Gate', time: '3 hrs ago', severity: 'High', status: 'NEW' },
+  { id: 'GD-2027-404', title: 'Missing Documents', type: 'General Diary', location: 'Kabirhat Town', time: '5 hrs ago', severity: 'Moderate', status: 'RESOLVED' }
 ];
 
 export const initialDownloads: ReportFile[] = [
