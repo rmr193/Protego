@@ -83,7 +83,7 @@ const Navbar: React.FC = () => {
     navigate('/');
   };
 
-  const roleName = user?.role?.name || (user?.email?.includes('officer') ? 'POLICE_OFFICER' : 'CITIZEN');
+  const roleName = user?.role?.name || (typeof (user as any)?.role === 'string' ? (user as any).role : 'CITIZEN');
   const unreadCount = notificationsRead ? 0 : notifications.filter(n => !n.read).length;
 
   return (

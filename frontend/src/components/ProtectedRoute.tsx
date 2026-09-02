@@ -14,10 +14,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
     return <Navigate to="/" replace />;
   }
 
-  if (allowedRoles && user?.role?.name && !allowedRoles.includes(user.role.name)) {
+  const userRole = user?.role?.name || (typeof (user as any)?.role === 'string' ? (user as any).role : 'CITIZEN');
+
+  if (allowedRoles && !allowedRoles.includes(userRole as any)) {
     // Logged in but doesn't have the required role
-    // Redirect to their respective dashboard
-    if (user.role.name === 'POLICE_OFFICER') {
+    // Redirect to their respective authorized dashboard
+    if (userRole === 'POLICE_OFFICER') {
       return <Navigate to="/police" replace />;
     } else {
       return <Navigate to="/citizen" replace />;

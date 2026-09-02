@@ -105,7 +105,7 @@ const LandingPage: React.FC = () => {
       const result = await login({ email, password });
       if (result.success) {
         setIsAuthModalOpen(false);
-        if (result.role === 'POLICE_OFFICER' || email.includes('officer')) {
+        if (result.role === 'POLICE_OFFICER') {
           navigate('/police');
         } else {
           navigate('/citizen');
