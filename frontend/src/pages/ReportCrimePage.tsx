@@ -8,7 +8,8 @@ import {
   CheckCircle2, 
   ArrowLeft,
   Loader2,
-  Trash2
+  Trash2,
+  AlertTriangle
 } from 'lucide-react';
 import { useCitizenStore } from '../store/citizenStore';
 import { useAuthStore } from '../store/authStore';
@@ -65,6 +66,22 @@ const ReportCrimePage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const [submittedReportId, setSubmittedReportId] = useState<string>('PRT-8839-A');
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const goToStep = (targetStep: number) => {
+    setFormError(null);
+    if (targetStep >= 2 && (!description || description.trim().length < 3)) {
+      setFormError('Please enter an incident description (at least 3 characters) before proceeding.');
+      setCurrentStep(1);
+      return;
+    }
+    if (targetStep >= 3 && (!location || location.trim().length < 2)) {
+      setFormError('Please provide an incident location or address before proceeding.');
+      setCurrentStep(2);
+      return;
+    }
+    setCurrentStep(targetStep);
+  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -91,13 +108,27 @@ const ReportCrimePage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
+
+    if (!description || description.trim().length < 3) {
+      setFormError('Please enter an incident description (at least 3 characters).');
+      setCurrentStep(1);
+      return;
+    }
+
+    if (!location || location.trim().length < 2) {
+      setFormError('Please specify an incident location or address.');
+      setCurrentStep(2);
+      return;
+    }
+
     setIsSubmitting(true);
 
     const result = await reportCrime({
       crime_type: incidentType,
-      description,
-      location: location,
-      date_time: dateTime || new Date().toISOString()
+      description: description.trim(),
+      location: location.trim(),
+      date_time: dateTime ? new Date(dateTime).toISOString() : new Date().toISOString()
     });
 
     if (result.success && result.report) {
@@ -117,7 +148,8 @@ const ReportCrimePage: React.FC = () => {
       setIsSubmitted(true);
     } else {
       setIsSubmitting(false);
-      alert(`Failed to submit report: ${result.error || 'Please ensure all fields (including description) are correctly filled.'}`);
+      const errDetail = result.error || 'Please ensure all fields are correctly filled.';
+      setFormError(errDetail);
     }
   };
 
@@ -147,7 +179,7 @@ const ReportCrimePage: React.FC = () => {
               className={`flex flex-col items-center flex-1 cursor-pointer relative pb-3 sm:pb-4 -mb-[13px] sm:-mb-[17px] ${
                 currentStep === 1 ? 'border-b-2 border-slate-900 font-bold text-slate-900' : 'text-slate-400 font-medium'
               }`}
-              onClick={() => setCurrentStep(1)}
+              onClick={() => goToStep(1)}
             >
               <span className="text-xs sm:text-sm">Step 1: Details</span>
             </div>
@@ -157,7 +189,7 @@ const ReportCrimePage: React.FC = () => {
               className={`flex flex-col items-center flex-1 cursor-pointer relative pb-3 sm:pb-4 -mb-[13px] sm:-mb-[17px] ${
                 currentStep === 2 ? 'border-b-2 border-slate-900 font-bold text-slate-900' : 'text-slate-400 font-medium'
               }`}
-              onClick={() => setCurrentStep(2)}
+              onClick={() => goToStep(2)}
             >
               <span className="text-xs sm:text-sm">Step 2: Location</span>
             </div>
@@ -167,7 +199,7 @@ const ReportCrimePage: React.FC = () => {
               className={`flex flex-col items-center flex-1 cursor-pointer relative pb-3 sm:pb-4 -mb-[13px] sm:-mb-[17px] ${
                 currentStep === 3 ? 'border-b-2 border-slate-900 font-bold text-slate-900' : 'text-slate-400 font-medium'
               }`}
-              onClick={() => setCurrentStep(3)}
+              onClick={() => goToStep(3)}
             >
               <span className="text-xs sm:text-sm">Step 3: Evidence</span>
             </div>
@@ -217,6 +249,17 @@ const ReportCrimePage: React.FC = () => {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
+            {formError && (
+              <div className="p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs font-semibold flex items-center justify-between animate-in fade-in">
+                <div className="flex items-center space-x-2">
+                  <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                  <span>{formError}</span>
+                </div>
+                <button type="button" onClick={() => setFormError(null)} className="text-rose-400 hover:text-rose-700">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
             
             {/* STEP 1: INCIDENT DETAILS */}
             {currentStep === 1 && (
@@ -291,7 +334,7 @@ const ReportCrimePage: React.FC = () => {
                 <div className="pt-2 flex justify-end">
                   <button
                     type="button"
-                    onClick={() => setCurrentStep(2)}
+                    onClick={() => goToStep(2)}
                     className="flex items-center space-x-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs uppercase tracking-wider px-6 py-3 rounded-xl transition"
                   >
                     <span>Next: Geolocation</span>
@@ -342,7 +385,7 @@ const ReportCrimePage: React.FC = () => {
 
                   <button
                     type="button"
-                    onClick={() => setCurrentStep(3)}
+                    onClick={() => goToStep(3)}
                     className="flex items-center space-x-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs uppercase tracking-wider px-6 py-3 rounded-xl transition"
                   >
                     <span>Next: Attach Evidence</span>

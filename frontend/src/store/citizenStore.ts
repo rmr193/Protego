@@ -195,7 +195,13 @@ export const useCitizenStore = create<CitizenState>((set, get) => ({
       return { success: true, report: newReport };
     } catch (err: any) {
       set({ isLoading: false });
-      return { success: false, error: err.message };
+      const apiErrors = err.response?.data?.errors;
+      let errorMsg = err.response?.data?.message || err.message || 'Failed to submit crime report';
+      if (Array.isArray(apiErrors) && apiErrors.length > 0) {
+        const details = apiErrors.map((e: any) => e.message || `${e.path?.join('.')}: invalid`).join(', ');
+        errorMsg = `${errorMsg}: ${details}`;
+      }
+      return { success: false, error: errorMsg };
     }
   },
 

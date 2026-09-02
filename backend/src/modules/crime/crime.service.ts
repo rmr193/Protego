@@ -12,11 +12,14 @@ export class CrimeService {
   }
 
   async createReport(userId: string, data: any) {
+    const reportDate = data.date_time ? new Date(data.date_time) : new Date();
     const report = await this.crimeRepository.createReport({
-      ...data,
       user_id: userId,
+      crime_type: data.crime_type,
+      description: data.description,
+      location: data.location,
       status: 'PENDING',
-      date_time: new Date(data.date_time)
+      date_time: isNaN(reportDate.getTime()) ? new Date() : reportDate
     });
 
     try {
