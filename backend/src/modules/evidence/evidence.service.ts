@@ -3,6 +3,9 @@ import { AppError } from '../../shared/utils/AppError';
 import fs from 'fs';
 import path from 'path';
 
+import { uploadToCloudinary } from '../../shared/services/cloudinary.service';
+import { logger } from '../../shared/utils/logger';
+
 export class EvidenceService {
   private evidenceRepository: EvidenceRepository;
 
@@ -21,7 +24,27 @@ export class EvidenceService {
       throw new AppError('You do not have permission to upload evidence for this report', 403);
     }
 
-    const fileUrl = `/uploads/${file.filename}`;
+    let fileUrl = '';
+    if (file.buffer) {
+      try {
+        const resourceType = file.mimetype.startsWith('video/')
+          ? 'video'
+          : file.mimetype === 'application/pdf'
+          ? 'raw'
+          : 'image';
+        const uploadRes = await uploadToCloudinary(file.buffer, 'protego/evidence', resourceType);
+        fileUrl = uploadRes.secure_url;
+      } catch (cloudErr) {
+        logger.warn('Cloudinary evidence upload failed, falling back to local storage:', cloudErr);
+        const uploadDir = path.join(__dirname, '../../../../uploads');
+        if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+        const filename = `evidence-${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+        fs.writeFileSync(path.join(uploadDir, filename), file.buffer);
+        fileUrl = `/uploads/${filename}`;
+      }
+    } else {
+      fileUrl = `/uploads/${file.filename}`;
+    }
     
     return this.evidenceRepository.uploadEvidence({
       report_id: reportId,
