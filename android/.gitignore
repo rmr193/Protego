@@ -1,0 +1,45 @@
+# Built application files
+*.apk
+*.ap_
+*.aab
+*.dex
+*.class
+
+# Build and cache directories
+.gradle/
+build/
+app/build/
+**/build/
+.cxx/
+captures/
+output.json
+
+# Local configuration file (contains SDK/NDK path)
+local.properties
+
+# Android Studio & IntelliJ IDEA project files
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+.navigation/
+
+# Android Studio Log files and memory dumps
+*.log
+profiler.dump
+
+# Keystore / Signing files
+*.jks
+*.keystore
+*.key
+*.pepk
+secrets.properties
+
+# Gradle wrapper binary (allow wrapper jar)
+!gradle/wrapper/gradle-wrapper.jar
+
+# OS specific files
+.DS_Store
+Thumbs.db
+protego.apk
