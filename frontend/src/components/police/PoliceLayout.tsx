@@ -276,7 +276,7 @@ const PoliceLayout: React.FC = () => {
       </div>
 
       {/* Modern Bottom Navigation Bar on Mobile & Tablets */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-[0_-4px_25px_rgba(0,0,0,0.08)] z-40 px-2 py-1.5 flex items-center justify-around safe-area-bottom">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-[0_-4px_25px_rgba(0,0,0,0.08)] z-40 px-2 py-1.5 pb-[max(0.375rem,env(safe-area-inset-bottom))] flex items-center justify-around">
         {navItems.map(item => {
           const active = location.pathname === item.path;
           const Icon = item.icon;
@@ -311,8 +311,8 @@ const PoliceLayout: React.FC = () => {
 
       {/* Edit Profile Modal */}
       {editProfileModalOpen && (
-        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full p-4 sm:p-6 relative">
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[9999] flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full p-4 sm:p-6 relative max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-black text-slate-900">Edit Profile</h3>
               <button onClick={() => setEditProfileModalOpen(false)} className="text-slate-400 hover:text-slate-700 transition">
@@ -357,7 +357,7 @@ const PoliceLayout: React.FC = () => {
                   type="text" 
                   value={editName}
                   onChange={e => setEditName(e.target.value)}
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
               </div>
@@ -367,7 +367,7 @@ const PoliceLayout: React.FC = () => {
                   type="tel" 
                   value={editPhone}
                   onChange={e => setEditPhone(e.target.value)}
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
               </div>

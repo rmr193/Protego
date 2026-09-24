@@ -202,7 +202,7 @@ const CitizenDashboard: React.FC = () => {
               Verified Resident • Emergency Dispatch Status: <span className="text-emerald-600 font-bold">Online & Active</span>
             </p>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => fetchCitizenData()}
               className="flex items-center space-x-1.5 px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 rounded-lg border border-slate-200 text-xs font-bold shadow-sm transition"
@@ -361,7 +361,7 @@ const CitizenDashboard: React.FC = () => {
       <Footer />
       
       {/* Floating SOS Action Button (Mobile) */}
-      <div className="fixed bottom-5 right-5 sm:bottom-8 sm:right-8 z-50 lg:hidden">
+      <div className="fixed bottom-5 right-5 sm:bottom-8 sm:right-8 z-50 md:hidden">
         <button 
           onClick={handleSosClick}
           className={`w-14 h-14 sm:w-16 sm:h-16 text-white font-black text-xs sm:text-sm rounded-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-transform border-2 sm:border-4 ${
@@ -377,8 +377,8 @@ const CitizenDashboard: React.FC = () => {
 
       {/* Case Details Modal */}
       {selectedCase && (
-        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 border border-slate-200">
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-5 sm:p-6 border border-slate-200 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
               <div>
                 <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">{selectedCase.type}</span>
@@ -460,7 +460,7 @@ const CitizenDashboard: React.FC = () => {
                 value={precinctSearch}
                 onChange={e => setPrecinctSearch(e.target.value)}
                 placeholder="Search thana or upazila..."
-                className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
+                className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-base sm:text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
               />
             </div>
 
@@ -605,8 +605,8 @@ const CitizenDashboard: React.FC = () => {
 
       {/* SOS Activated Modal */}
       {sosActiveModal && (
-        <div className="fixed inset-0 bg-rose-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 text-center border-2 border-rose-500 animate-in zoom-in-95">
+        <div className="fixed inset-0 bg-rose-950/80 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-5 sm:p-6 text-center border-2 border-rose-500 animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
             <div className="w-16 h-16 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-bounce">
               <Radio className="w-8 h-8 animate-pulse" />
             </div>

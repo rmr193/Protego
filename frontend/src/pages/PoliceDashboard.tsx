@@ -584,7 +584,7 @@ const PoliceDashboard: React.FC = () => {
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-20 right-4 z-50 bg-slate-900 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-2xl border border-slate-700 flex items-center space-x-2 animate-in fade-in slide-in-from-top-2">
+        <div className="fixed top-16 sm:top-20 left-3 right-3 sm:left-auto sm:right-4 z-50 max-w-sm bg-slate-900 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-2xl border border-slate-700 flex items-center space-x-2 animate-in fade-in slide-in-from-top-2">
           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{toastMessage}</span>
         </div>
@@ -605,10 +605,10 @@ const PoliceDashboard: React.FC = () => {
               </p>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
             <button
               onClick={() => navigate('/police/incidents')}
-              className="bg-white text-red-600 hover:bg-red-50 text-xs font-bold px-3 py-1.5 rounded-lg shadow transition"
+              className="bg-white text-red-600 hover:bg-rose-50 text-xs font-bold px-3 py-1.5 rounded-lg shadow transition"
             >
               View Dispatch
             </button>
@@ -987,7 +987,7 @@ const PoliceDashboard: React.FC = () => {
                     value={newZoneName}
                     onChange={e => setNewZoneName(e.target.value)}
                     placeholder="e.g. Maijdee, Noakhali"
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs text-slate-900 font-bold focus:ring-2 focus:ring-slate-900/20 focus:outline-none"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-base sm:text-xs text-slate-900 font-bold focus:ring-2 focus:ring-slate-900/20 focus:outline-none"
                   />
                 </div>
 
@@ -1025,7 +1025,7 @@ const PoliceDashboard: React.FC = () => {
                       value={newZoneLat}
                       onChange={e => setNewZoneLat(e.target.value)}
                       placeholder="40.7128"
-                      className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-900 font-mono focus:outline-none"
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-base sm:text-xs text-slate-900 font-mono focus:outline-none"
                     />
                   </div>
                   <div>
@@ -1036,7 +1036,7 @@ const PoliceDashboard: React.FC = () => {
                       value={newZoneLng}
                       onChange={e => setNewZoneLng(e.target.value)}
                       placeholder="-74.0060"
-                      className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-900 font-mono focus:outline-none"
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-base sm:text-xs text-slate-900 font-mono focus:outline-none"
                     />
                   </div>
                 </div>
@@ -1051,7 +1051,7 @@ const PoliceDashboard: React.FC = () => {
                     value={newZoneDescription}
                     onChange={e => setNewZoneDescription(e.target.value)}
                     placeholder="Details on surveillance, lighting, hazard triggers, or response protocols..."
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs text-slate-900 font-medium focus:ring-2 focus:ring-slate-900/20 focus:outline-none"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-base sm:text-xs text-slate-900 font-medium focus:ring-2 focus:ring-slate-900/20 focus:outline-none"
                   />
                 </div>
 

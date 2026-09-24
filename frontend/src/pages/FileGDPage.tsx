@@ -221,7 +221,7 @@ LEDGER VERIFICATION: SEC-HASH-${Date.now()}
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-20 right-4 z-50 bg-slate-900 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-xl border border-slate-700 flex items-center space-x-2 animate-in fade-in slide-in-from-top-2">
+        <div className="fixed top-16 sm:top-20 left-3 right-3 sm:left-auto sm:right-4 z-50 max-w-sm bg-slate-900 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-xl border border-slate-700 flex items-center space-x-2 animate-in fade-in slide-in-from-top-2">
           <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{toastMessage}</span>
         </div>
@@ -385,7 +385,7 @@ LEDGER VERIFICATION: SEC-HASH-${Date.now()}
                 type="text"
                 value={incidentCategory}
                 onChange={e => setIncidentCategory(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-900 font-medium focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 focus:outline-none"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-base sm:text-sm text-slate-900 font-medium focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 focus:outline-none"
               />
             </div>
 
@@ -408,7 +408,7 @@ LEDGER VERIFICATION: SEC-HASH-${Date.now()}
                 value={locationText}
                 onChange={e => setLocationText(e.target.value)}
                 placeholder="Fetching live location..."
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-900 font-medium focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 focus:outline-none"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-base sm:text-sm text-slate-900 font-medium focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 focus:outline-none"
               />
             </div>
 
@@ -420,7 +420,7 @@ LEDGER VERIFICATION: SEC-HASH-${Date.now()}
                 type="datetime-local"
                 value={incidentTime}
                 onChange={e => setIncidentTime(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-900 font-medium focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 focus:outline-none"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-base sm:text-sm text-slate-900 font-medium focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 focus:outline-none"
               />
             </div>
 
@@ -433,7 +433,7 @@ LEDGER VERIFICATION: SEC-HASH-${Date.now()}
                 value={descriptionText}
                 onChange={e => setDescriptionText(e.target.value)}
                 placeholder="Provide complete chronological details regarding the loss, discovery, or security situation..."
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-4 text-sm text-slate-900 font-medium focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 focus:outline-none leading-relaxed"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-4 text-base sm:text-sm text-slate-900 font-medium focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 focus:outline-none leading-relaxed"
               />
             </div>
 
@@ -716,7 +716,7 @@ LEDGER VERIFICATION: SEC-HASH-${Date.now()}
       </footer>
 
       {/* Floating SOS Action Button */}
-      <div className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-50 lg:hidden print:hidden">
+      <div className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-50 md:hidden print:hidden">
         <button
           onClick={() => triggerEmergencySos()}
           className={`w-13 h-13 sm:w-14 sm:h-14 text-white font-black text-xs rounded-2xl flex flex-col items-center justify-center hover:scale-105 active:scale-95 transition-transform border-2 ${activeSos

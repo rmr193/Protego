@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Navigation, RefreshCw, Eye, EyeOff, MapPin, ShieldAlert, FileText, ShieldCheck } from 'lucide-react';
+import { Navigation, RefreshCw, Eye, EyeOff, MapPin, ShieldAlert, FileText, ShieldCheck, Layers, X } from 'lucide-react';
 import { crimeApi, gdApi, policeApi } from '../services/api';
 import { subscribeToEvents } from '../services/socket';
 import { parseIncidentCoordinates } from '../utils/geoUtils';
@@ -62,6 +62,7 @@ const LiveMap: React.FC = () => {
   const [showSafeZones, setShowSafeZones] = useState(true);
   const [showCrimeZones, setShowCrimeZones] = useState(true);
   const [showGDZones, setShowGDZones] = useState(true);
+  const [isLegendOpen, setIsLegendOpen] = useState(false);
 
   // Fetch Live Data Function for all reported incidents online
   const fetchLiveData = useCallback(async () => {
@@ -258,7 +259,7 @@ const LiveMap: React.FC = () => {
 
     userMarkerRef.current = L.marker([currentLocation.lat, currentLocation.lng], { icon: userLocationIcon, zIndexOffset: 1000 })
       .addTo(map)
-      .bindPopup(`<b style="color:#059669;">📍 Your Location</b><br/><span style="font-size:11px;color:#64748b;">Live GPS: ${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)}</span>`);
+      .bindPopup(`<b style="color:#059669;">📍 Your Location</b><br/><span style="font-size:11px;color:#64748b;">Live GPS: ${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)}</span>`, { maxWidth: 260 });
 
     // 2. Render Safe Sanctuaries Layer
     safeLayerRef.current.clearLayers();
@@ -292,13 +293,13 @@ const LiveMap: React.FC = () => {
 
         const marker = L.marker([station.lat, station.lng], { icon: stationIcon });
         marker.bindPopup(`
-          <div style="font-family:sans-serif;min-width:180px;padding:2px;">
+          <div style="font-family:sans-serif;max-width:240px;padding:2px;">
             <strong style="color:#059669;font-size:12px;">🛡️ ${station.name}</strong>
             <p style="font-size:11px;color:#475569;margin-top:2px;"><b>Location:</b> ${station.location}</p>
             <p style="font-size:11px;color:#475569;"><b>Emergency Phone:</b> <a href="tel:${station.phone}" style="color:#2563eb;font-weight:bold;">${station.phone}</a></p>
             <span style="display:inline-block;margin-top:4px;font-size:9px;background:#d1fae5;color:#065f46;padding:2px 6px;border-radius:4px;font-weight:bold;">24/7 Verified Safe Sanctuary</span>
           </div>
-        `);
+        `, { maxWidth: 260 });
 
         safeLayerRef.current.addLayer(circle);
         safeLayerRef.current.addLayer(marker);
@@ -332,7 +333,7 @@ const LiveMap: React.FC = () => {
 
         const marker = L.marker([crime.lat, crime.lng], { icon: crimeIcon });
         marker.bindPopup(`
-          <div style="font-family:sans-serif;min-width:210px;padding:3px;">
+          <div style="font-family:sans-serif;max-width:240px;padding:3px;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
               <strong style="color:#dc2626;font-size:12px;">🚨 ${crime.title}</strong>
               <span style="font-size:9px;font-weight:bold;background:#fee2e2;color:#991b1b;padding:1px 5px;border-radius:4px;">${crime.status}</span>
@@ -345,7 +346,7 @@ const LiveMap: React.FC = () => {
               <span>GPS: ${crime.lat.toFixed(4)}, ${crime.lng.toFixed(4)}</span>
             </div>
           </div>
-        `);
+        `, { maxWidth: 260 });
 
         crimeLayerRef.current.addLayer(marker);
       });
@@ -374,7 +375,7 @@ const LiveMap: React.FC = () => {
 
         const marker = L.marker([gd.lat, gd.lng], { icon: gdIcon });
         marker.bindPopup(`
-          <div style="font-family:sans-serif;min-width:210px;padding:3px;">
+          <div style="font-family:sans-serif;max-width:240px;padding:3px;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
               <strong style="color:#2563eb;font-size:12px;">📋 ${gd.title}</strong>
               <span style="font-size:9px;font-weight:bold;background:#dbeafe;color:#1e40af;padding:1px 5px;border-radius:4px;">${gd.status}</span>
@@ -387,7 +388,7 @@ const LiveMap: React.FC = () => {
               <span>GPS: ${gd.lat.toFixed(4)}, ${gd.lng.toFixed(4)}</span>
             </div>
           </div>
-        `);
+        `, { maxWidth: 260 });
 
         gdLayerRef.current.addLayer(marker);
       });
@@ -450,38 +451,59 @@ const LiveMap: React.FC = () => {
       <div ref={mapContainerRef} className="absolute inset-0 z-10" />
 
       {/* Map Legend (Bottom Left) - Fully Dynamic Based on Live Database Incidents */}
-      <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm rounded-xl shadow-xl border border-slate-200 p-3 z-20 w-64 max-w-[calc(100vw-2rem)]">
-        <div className="flex justify-between items-center mb-2.5 text-[9px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-100 pb-1.5">
-          <span>Live Community Layers</span>
-          <span>Online Feed</span>
-        </div>
+      <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-20 max-w-[calc(100vw-1.5rem)]">
+        {!isLegendOpen && (
+          <button
+            onClick={() => setIsLegendOpen(true)}
+            className="sm:hidden bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-slate-200 px-3 py-2 flex items-center space-x-2 text-xs font-bold text-slate-800"
+          >
+            <Layers className="w-3.5 h-3.5 text-blue-600" />
+            <span>Layers ({crimes.length + gds.length + safeSanctuaries.length})</span>
+          </button>
+        )}
 
-        <div className="space-y-2">
-          {/* Safe Sanctuaries */}
-          <div className="flex items-center justify-between group cursor-pointer hover:bg-slate-50 p-1 rounded-lg transition" onClick={() => setShowSafeZones(!showSafeZones)}>
-            <div className="flex items-center space-x-2">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-              <span className="text-xs font-bold text-slate-800">Police Safe Havens ({safeSanctuaries.length})</span>
+        <div className={`bg-white/95 backdrop-blur-sm rounded-xl shadow-xl border border-slate-200 p-3 w-64 max-w-[calc(100vw-1.5rem)] ${!isLegendOpen ? 'hidden sm:block' : 'block'}`}>
+          <div className="flex justify-between items-center mb-2.5 text-[9px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-100 pb-1.5">
+            <span>Live Community Layers</span>
+            <div className="flex items-center space-x-1.5">
+              <span>Online Feed</span>
+              <button
+                onClick={() => setIsLegendOpen(false)}
+                className="sm:hidden text-slate-400 hover:text-slate-700 p-0.5 ml-1 rounded hover:bg-slate-100"
+                title="Collapse Layers"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
             </div>
-            {showSafeZones ? <Eye className="w-3.5 h-3.5 text-emerald-600" /> : <EyeOff className="w-3.5 h-3.5 text-slate-300" />}
           </div>
 
-          {/* Crime Reports */}
-          <div className="flex items-center justify-between group cursor-pointer hover:bg-slate-50 p-1 rounded-lg transition" onClick={() => setShowCrimeZones(!showCrimeZones)}>
-            <div className="flex items-center space-x-2">
-              <ShieldAlert className="w-3.5 h-3.5 text-rose-600" />
-              <span className="text-xs font-bold text-slate-800">Reported Crimes ({crimes.length})</span>
+          <div className="space-y-2">
+            {/* Safe Sanctuaries */}
+            <div className="flex items-center justify-between group cursor-pointer hover:bg-slate-50 p-1 rounded-lg transition" onClick={() => setShowSafeZones(!showSafeZones)}>
+              <div className="flex items-center space-x-2">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                <span className="text-xs font-bold text-slate-800">Police Safe Havens ({safeSanctuaries.length})</span>
+              </div>
+              {showSafeZones ? <Eye className="w-3.5 h-3.5 text-emerald-600" /> : <EyeOff className="w-3.5 h-3.5 text-slate-300" />}
             </div>
-            {showCrimeZones ? <Eye className="w-3.5 h-3.5 text-rose-600" /> : <EyeOff className="w-3.5 h-3.5 text-slate-300" />}
-          </div>
 
-          {/* General Diaries */}
-          <div className="flex items-center justify-between group cursor-pointer hover:bg-slate-50 p-1 rounded-lg transition" onClick={() => setShowGDZones(!showGDZones)}>
-            <div className="flex items-center space-x-2">
-              <FileText className="w-3.5 h-3.5 text-blue-600" />
-              <span className="text-xs font-bold text-slate-800">General Diaries / GD ({gds.length})</span>
+            {/* Crime Reports */}
+            <div className="flex items-center justify-between group cursor-pointer hover:bg-slate-50 p-1 rounded-lg transition" onClick={() => setShowCrimeZones(!showCrimeZones)}>
+              <div className="flex items-center space-x-2">
+                <ShieldAlert className="w-3.5 h-3.5 text-rose-600" />
+                <span className="text-xs font-bold text-slate-800">Reported Crimes ({crimes.length})</span>
+              </div>
+              {showCrimeZones ? <Eye className="w-3.5 h-3.5 text-rose-600" /> : <EyeOff className="w-3.5 h-3.5 text-slate-300" />}
             </div>
-            {showGDZones ? <Eye className="w-3.5 h-3.5 text-blue-600" /> : <EyeOff className="w-3.5 h-3.5 text-slate-300" />}
+
+            {/* General Diaries */}
+            <div className="flex items-center justify-between group cursor-pointer hover:bg-slate-50 p-1 rounded-lg transition" onClick={() => setShowGDZones(!showGDZones)}>
+              <div className="flex items-center space-x-2">
+                <FileText className="w-3.5 h-3.5 text-blue-600" />
+                <span className="text-xs font-bold text-slate-800">General Diaries / GD ({gds.length})</span>
+              </div>
+              {showGDZones ? <Eye className="w-3.5 h-3.5 text-blue-600" /> : <EyeOff className="w-3.5 h-3.5 text-slate-300" />}
+            </div>
           </div>
         </div>
       </div>

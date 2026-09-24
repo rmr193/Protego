@@ -174,17 +174,17 @@ const LandingPage: React.FC = () => {
 
           {/* Top-Left Dark Tab: Protego Brand Identity */}
           <div className="relative flex items-center">
-            <div className="bg-[#0E1013] text-white px-5 sm:px-8 h-12 sm:h-[60px] rounded-br-[22px] sm:rounded-br-[28px] flex items-center space-x-2.5 sm:space-x-3 shadow-sm">
-              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400">
-                <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-blue-500/20 text-blue-400" />
+            <div className="bg-[#0E1013] text-white px-3.5 sm:px-8 h-11 sm:h-[60px] rounded-br-[18px] sm:rounded-br-[28px] flex items-center space-x-2 sm:space-x-3 shadow-sm">
+              <div className="w-5 h-5 sm:w-7 sm:h-7 rounded-lg bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400">
+                <Shield className="w-3 h-3 sm:w-4 sm:h-4 fill-blue-500/20 text-blue-400" />
               </div>
-              <span className="font-extrabold text-base sm:text-lg tracking-tight text-white">
+              <span className="font-extrabold text-sm sm:text-lg tracking-tight text-white">
                 Protego
               </span>
             </div>
 
             {/* Inverted Fillet Curve connecting Logo Tab to Canvas */}
-            <div className="absolute left-full top-0">
+            <div className="hidden sm:block absolute left-full top-0">
               <InvertedFillet type="tl" size={28} />
             </div>
           </div>
@@ -214,17 +214,17 @@ const LandingPage: React.FC = () => {
           {/* Top-Right Dark Tab: Get Started Action */}
           <div className="relative flex items-center">
             {/* Inverted Fillet Curve connecting Canvas to Right Tab */}
-            <div className="absolute right-full top-0">
+            <div className="hidden sm:block absolute right-full top-0">
               <InvertedFillet type="tr" size={28} />
             </div>
 
-            <div className="bg-[#0E1013] text-white px-5 sm:px-8 h-12 sm:h-[60px] rounded-bl-[22px] sm:rounded-bl-[28px] flex items-center shadow-sm">
+            <div className="bg-[#0E1013] text-white px-3 sm:px-8 h-11 sm:h-[60px] rounded-bl-[18px] sm:rounded-bl-[28px] flex items-center shadow-sm">
               <button
                 onClick={() => openAuth('signup')}
-                className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-bold px-4 sm:px-5 py-2 rounded-full transition-all shadow-sm hover:scale-[1.02] active:scale-[0.98] border border-blue-400/30 cursor-pointer"
+                className="flex items-center space-x-1.5 sm:space-x-2 bg-blue-600 hover:bg-blue-500 text-white text-[11px] sm:text-sm font-bold px-3 sm:px-5 py-1.5 sm:py-2 rounded-full transition-all shadow-sm hover:scale-[1.02] active:scale-[0.98] border border-blue-400/30 cursor-pointer"
               >
                 <span>Get Started</span>
-                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
               </button>
             </div>
           </div>
@@ -232,23 +232,23 @@ const LandingPage: React.FC = () => {
         </header>
 
         {/* HERO SECTION: EDITORIAL COMPOSITION (LEFT) & INTEGRATED CAROUSEL (RIGHT) */}
-        <main className="relative z-10 flex-1 px-5 sm:px-10 lg:px-16 pt-8 sm:pt-12 pb-16 sm:pb-20 max-w-[1440px] mx-auto w-full flex flex-col justify-center">
+        <main className="relative z-10 flex-1 px-4 sm:px-10 lg:px-16 pt-6 sm:pt-12 pb-12 sm:pb-20 max-w-[1440px] mx-auto w-full flex flex-col justify-center">
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
 
             {/* LEFT COLUMN: HERO TYPOGRAPHY & ACTIONS */}
-            <div className="lg:col-span-6 space-y-6 sm:space-y-8 text-left">
+            <div className="lg:col-span-6 space-y-5 sm:space-y-8 text-left">
 
               {/* Enterprise Security Badge */}
-              <div className="inline-flex items-center space-x-2 bg-white/90 border border-slate-300/80 px-3.5 py-1.5 rounded-full text-slate-700 shadow-xs">
-                <Lock className="w-3.5 h-3.5 text-blue-600 fill-current" />
-                <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-widest text-slate-800">
+              <div className="inline-flex items-center space-x-2 bg-white/90 border border-slate-300/80 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-slate-700 shadow-xs">
+                <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-blue-600 fill-current" />
+                <span className="text-[9px] sm:text-[11px] font-extrabold uppercase tracking-widest text-slate-800">
                   LIVE CONNECTED COMMAND NETWORK
                 </span>
               </div>
 
               {/* Editorial Hero Headline */}
-              <h1 className="text-4xl sm:text-6xl lg:text-[74px] font-black text-slate-950 tracking-tight leading-[1.06]">
+              <h1 className="text-3xl sm:text-5xl lg:text-[74px] font-black text-slate-950 tracking-tight leading-[1.08] sm:leading-[1.06]">
                 Your Shield in <br />
                 <span className="text-slate-950">Public Safety</span>
               </h1>
@@ -296,7 +296,7 @@ const LandingPage: React.FC = () => {
               <div className="relative w-full max-w-[560px] rounded-[28px] sm:rounded-[36px] overflow-hidden border border-slate-300/80 shadow-[0_20px_50px_rgba(15,23,42,0.15)] group bg-slate-950">
 
                 {/* Slides Container */}
-                <div className="relative h-[300px] sm:h-[380px] lg:h-[420px] w-full overflow-hidden">
+                <div className="relative h-[260px] sm:h-[380px] lg:h-[420px] w-full overflow-hidden">
                   {heroSlides.map((slide, index) => (
                     <div
                       key={slide.id}
@@ -314,14 +314,14 @@ const LandingPage: React.FC = () => {
                       <div className="absolute inset-0 bg-gradient-to-r from-[#040812]/60 via-transparent to-transparent"></div>
 
                       {/* Slide Caption Overlay with Exact Text */}
-                      <div className="absolute bottom-5 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 z-20 space-y-1.5 text-left">
-                        <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-md bg-blue-600/90 border border-blue-400/40 text-[10px] font-black text-white uppercase tracking-wider backdrop-blur-xs">
+                      <div className="absolute bottom-3 left-3 right-3 sm:bottom-6 sm:left-6 sm:right-6 z-20 space-y-1 sm:space-y-1.5 text-left">
+                        <div className="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded-md bg-blue-600/90 border border-blue-400/40 text-[9px] sm:text-[10px] font-black text-white uppercase tracking-wider backdrop-blur-xs">
                           <span>{slide.tag}</span>
                         </div>
-                        <h3 className="text-base sm:text-lg lg:text-xl font-black text-white drop-shadow-md leading-tight">
+                        <h3 className="text-sm sm:text-lg lg:text-xl font-black text-white drop-shadow-md leading-tight">
                           {slide.title}
                         </h3>
-                        <p className="text-xs sm:text-sm text-slate-300 line-clamp-2 max-w-md drop-shadow-sm font-normal">
+                        <p className="text-[11px] sm:text-sm text-slate-300 line-clamp-2 max-w-md drop-shadow-sm font-normal">
                           {slide.description}
                         </p>
                       </div>
@@ -333,20 +333,20 @@ const LandingPage: React.FC = () => {
                 {/* Minimalist Navigation Arrows */}
                 <button
                   onClick={prevSlide}
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 z-30 p-2 sm:p-2.5 rounded-full bg-slate-950/70 hover:bg-slate-900 text-white border border-slate-700/70 backdrop-blur-md transition-all opacity-80 hover:opacity-100 hover:scale-105 active:scale-95 shadow-md cursor-pointer"
+                  className="absolute left-2 sm:left-3.5 top-1/2 -translate-y-1/2 z-30 p-1.5 sm:p-2.5 rounded-full bg-slate-950/70 hover:bg-slate-900 text-white border border-slate-700/70 backdrop-blur-md transition-all opacity-80 hover:opacity-100 hover:scale-105 active:scale-95 shadow-md cursor-pointer"
                   title="Previous Slide"
                   aria-label="Previous Slide"
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
 
                 <button
                   onClick={nextSlide}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 z-30 p-2 sm:p-2.5 rounded-full bg-slate-950/70 hover:bg-slate-900 text-white border border-slate-700/70 backdrop-blur-md transition-all opacity-80 hover:opacity-100 hover:scale-105 active:scale-95 shadow-md cursor-pointer"
+                  className="absolute right-2 sm:right-3.5 top-1/2 -translate-y-1/2 z-30 p-1.5 sm:p-2.5 rounded-full bg-slate-950/70 hover:bg-slate-900 text-white border border-slate-700/70 backdrop-blur-md transition-all opacity-80 hover:opacity-100 hover:scale-105 active:scale-95 shadow-md cursor-pointer"
                   title="Next Slide"
                   aria-label="Next Slide"
                 >
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
 
                 {/* Top Pagination Dots */}
@@ -484,7 +484,7 @@ const LandingPage: React.FC = () => {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Jane Doe"
-                      className="w-full bg-slate-50 border border-slate-300 rounded-lg pl-10 pr-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900"
+                      className="w-full bg-slate-50 border border-slate-300 rounded-lg pl-10 pr-4 py-2.5 text-base sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900"
                     />
                     <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                   </div>
@@ -502,7 +502,7 @@ const LandingPage: React.FC = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="citizen@protego.org or officer@protego.org"
-                    className="w-full bg-slate-50 border border-slate-300 rounded-lg pl-10 pr-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-lg pl-10 pr-4 py-2.5 text-base sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900"
                   />
                   <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                 </div>
@@ -520,7 +520,7 @@ const LandingPage: React.FC = () => {
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="+1 (555) 000-0000"
-                      className="w-full bg-slate-50 border border-slate-300 rounded-lg pl-10 pr-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900"
+                      className="w-full bg-slate-50 border border-slate-300 rounded-lg pl-10 pr-4 py-2.5 text-base sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900"
                     />
                     <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                   </div>
@@ -538,7 +538,7 @@ const LandingPage: React.FC = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••••••"
-                    className="w-full bg-slate-50 border border-slate-300 rounded-lg pl-10 pr-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-lg pl-10 pr-4 py-2.5 text-base sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900"
                   />
                   <Key className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                 </div>

@@ -182,7 +182,7 @@ const ReportCrimePage: React.FC = () => {
               }`}
               onClick={() => goToStep(1)}
             >
-              <span className="text-xs sm:text-sm">Step 1: Details</span>
+              <span className="text-xs sm:text-sm text-center"><span className="hidden sm:inline">Step 1: </span>Details</span>
             </div>
 
             {/* Step 2 */}
@@ -192,7 +192,7 @@ const ReportCrimePage: React.FC = () => {
               }`}
               onClick={() => goToStep(2)}
             >
-              <span className="text-xs sm:text-sm">Step 2: Location</span>
+              <span className="text-xs sm:text-sm text-center"><span className="hidden sm:inline">Step 2: </span>Location</span>
             </div>
 
             {/* Step 3 */}
@@ -202,7 +202,7 @@ const ReportCrimePage: React.FC = () => {
               }`}
               onClick={() => goToStep(3)}
             >
-              <span className="text-xs sm:text-sm">Step 3: Evidence</span>
+              <span className="text-xs sm:text-sm text-center"><span className="hidden sm:inline">Step 3: </span>Evidence</span>
             </div>
 
           </div>
@@ -278,7 +278,7 @@ const ReportCrimePage: React.FC = () => {
                     <select
                       value={incidentType}
                       onChange={e => setIncidentType(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 font-medium focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 focus:outline-none"
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm text-slate-900 font-medium focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 focus:outline-none"
                     >
                       <option value="Theft / Burglary">Theft / Burglary</option>
                       <option value="Physical Assault">Physical Assault</option>
@@ -297,7 +297,7 @@ const ReportCrimePage: React.FC = () => {
                     <select
                       value={severityLevel}
                       onChange={e => setSeverityLevel(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 font-medium focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 focus:outline-none"
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm text-slate-900 font-medium focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 focus:outline-none"
                     >
                       <option value="Low">Low — Non-urgent reporting</option>
                       <option value="Moderate">Moderate — Property damage / No injuries</option>
@@ -315,7 +315,7 @@ const ReportCrimePage: React.FC = () => {
                     type="datetime-local"
                     value={dateTime}
                     onChange={e => setDateTime(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 font-medium focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 focus:outline-none"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm text-slate-900 font-medium focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 focus:outline-none"
                   />
                 </div>
 
@@ -328,7 +328,7 @@ const ReportCrimePage: React.FC = () => {
                     value={description}
                     onChange={e => setDescription(e.target.value)}
                     placeholder="Describe suspect appearance, clothing, vehicle license plates, direction of escape..."
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3.5 text-sm text-slate-900 font-medium focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 focus:outline-none"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3.5 text-base sm:text-sm text-slate-900 font-medium focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 focus:outline-none"
                   />
                 </div>
 
@@ -336,7 +336,7 @@ const ReportCrimePage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => goToStep(2)}
-                    className="flex items-center space-x-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs uppercase tracking-wider px-6 py-3 rounded-xl transition"
+                    className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs uppercase tracking-wider px-6 py-3 rounded-xl transition"
                   >
                     <span>Next: Geolocation</span>
                     <ArrowRight className="w-4 h-4" />
@@ -363,7 +363,7 @@ const ReportCrimePage: React.FC = () => {
                       value={location}
                       onChange={e => setLocation(e.target.value)}
                       placeholder="e.g. 124 Elm Street, Sector 4 or Near West Gate"
-                      className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 font-medium focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 focus:outline-none"
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-10 pr-4 py-2.5 text-base sm:text-sm text-slate-900 font-medium focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 focus:outline-none"
                     />
                     <MapPin className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                   </div>
@@ -436,11 +436,11 @@ const ReportCrimePage: React.FC = () => {
                   </div>
                 )}
 
-                <div className="pt-2 flex justify-between items-center">
+                <div className="pt-2 flex flex-col-reverse sm:flex-row justify-between items-stretch sm:items-center gap-3">
                   <button
                     type="button"
                     onClick={() => setCurrentStep(2)}
-                    className="flex items-center space-x-1.5 text-slate-600 hover:text-slate-900 font-bold text-xs px-4 py-2.5 rounded-xl transition"
+                    className="flex items-center justify-center space-x-1.5 text-slate-600 hover:text-slate-900 font-bold text-xs px-4 py-2.5 rounded-xl border border-slate-200 sm:border-transparent transition"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     <span>Back</span>
@@ -449,7 +449,7 @@ const ReportCrimePage: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="flex items-center space-x-2 bg-rose-600 hover:bg-rose-700 text-white font-black text-xs uppercase tracking-wider px-8 py-3 rounded-xl transition shadow-md shadow-rose-600/20 disabled:opacity-60"
+                    className="flex items-center justify-center space-x-2 bg-rose-600 hover:bg-rose-700 text-white font-black text-xs uppercase tracking-wider px-8 py-3 rounded-xl transition shadow-md shadow-rose-600/20 disabled:opacity-60"
                   >
                     {isSubmitting ? (
                       <>
