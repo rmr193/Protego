@@ -6,6 +6,15 @@ export class GDRepository {
   }
 
   async findGDById(id: string) {
+    if (id.toUpperCase().startsWith('GD-') || (id.length === 8 && /^[0-9a-f]{8}$/i.test(id))) {
+      const clean = id.replace(/^GD-/i, '').toLowerCase();
+      const gd = await prisma.generalDiary.findFirst({
+        where: { gd_id: { startsWith: clean, mode: 'insensitive' } },
+        include: { user: { select: { full_name: true, email: true, phone: true } } }
+      });
+      if (gd) return gd;
+    }
+
     return prisma.generalDiary.findUnique({
       where: { gd_id: id },
       include: { user: { select: { full_name: true, email: true, phone: true } } }
@@ -27,8 +36,20 @@ export class GDRepository {
   }
 
   async updateGD(id: string, data: any) {
+    let targetId = id;
+    if (id.toUpperCase().startsWith('GD-') || (id.length === 8 && /^[0-9a-f]{8}$/i.test(id))) {
+      const clean = id.replace(/^GD-/i, '').toLowerCase();
+      const existing = await prisma.generalDiary.findFirst({
+        where: { gd_id: { startsWith: clean, mode: 'insensitive' } },
+        select: { gd_id: true }
+      });
+      if (existing) {
+        targetId = existing.gd_id;
+      }
+    }
+
     return prisma.generalDiary.update({
-      where: { gd_id: id },
+      where: { gd_id: targetId },
       data
     });
   }

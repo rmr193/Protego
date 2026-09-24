@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ClipboardList, 
@@ -10,10 +10,10 @@ import {
   Radio, 
   CheckCircle2, 
   Clock, 
-  X,
-  RefreshCw,
-  Phone,
-  Search
+  X, 
+  RefreshCw, 
+  Phone, 
+  Search 
 } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
@@ -27,6 +27,35 @@ import {
   getDistanceKm,
   type NoakhaliPoliceStation 
 } from '../data/noakhaliPoliceData';
+import { formatIncidentId } from '../utils/idUtils';
+
+interface CaseItem {
+  id: string;
+  title: string;
+  type: string;
+  status: string;
+  desc: string;
+  date: string;
+  icon: typeof ClipboardList | typeof ShieldAlert;
+}
+
+const statusBadgeStyles: Record<string, string> = {
+  APPROVED: 'bg-emerald-100 text-emerald-800',
+  RESOLVED: 'bg-emerald-100 text-emerald-800',
+  PENDING: 'bg-amber-100 text-amber-800',
+  INVESTIGATING: 'bg-blue-100 text-blue-800'
+};
+
+const getUserCoords = (): { lat: number; lng: number } => {
+  try {
+    const saved = localStorage.getItem('PROTEGO_CURRENT_GPS_LOCATION');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed.lat && parsed.lng) return { lat: Number(parsed.lat), lng: Number(parsed.lng) };
+    }
+  } catch {}
+  return { lat: 22.8717, lng: 91.0879 };
+};
 
 const CitizenDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -44,53 +73,11 @@ const CitizenDashboard: React.FC = () => {
 
   const [precinctModalOpen, setPrecinctModalOpen] = useState(false);
   const [sosActiveModal, setSosActiveModal] = useState(false);
-  const [sosDetails, setSosDetails] = useState<{lat: string, lng: string, unit?: string, eta?: string} | null>(null);
-  const [selectedCase, setSelectedCase] = useState<any | null>(null);
-
-  const [nearestStationInfo, setNearestStationInfo] = useState<{
-    station: NoakhaliPoliceStation;
-    distanceKm: number;
-  } | null>(null);
+  const [sosDetails, setSosDetails] = useState<{ lat: string; lng: string; unit?: string; eta?: string } | null>(null);
+  const [selectedCase, setSelectedCase] = useState<CaseItem | null>(null);
+  const [nearestStationInfo, setNearestStationInfo] = useState<{ station: NoakhaliPoliceStation; distanceKm: number } | null>(null);
   const [precinctSearch, setPrecinctSearch] = useState('');
   const [isLocating, setIsLocating] = useState(false);
-
-  const locateNearestStation = () => {
-    setIsLocating(true);
-
-    const resolveWithCoords = (userLat: number, userLon: number) => {
-      const nearest = findNearestPoliceStation(userLat, userLon);
-      setNearestStationInfo(nearest);
-      setIsLocating(false);
-    };
-
-    // Check saved coordinates first
-    const saved = localStorage.getItem('PROTEGO_CURRENT_GPS_LOCATION');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed.lat && parsed.lng) {
-          resolveWithCoords(parsed.lat, parsed.lng);
-          return;
-        }
-      } catch {}
-    }
-
-    if (!navigator.geolocation) {
-      resolveWithCoords(22.8717, 91.0879);
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        resolveWithCoords(pos.coords.latitude, pos.coords.longitude);
-      },
-      () => {
-        // Default to Noakhali District HQ coords
-        resolveWithCoords(22.8717, 91.0879);
-      },
-      { timeout: 7000 }
-    );
-  };
 
   useEffect(() => {
     fetchCitizenData();
@@ -104,7 +91,6 @@ const CitizenDashboard: React.FC = () => {
     }
   }, [precinctModalOpen, nearestStationInfo]);
 
-  // Immediately close modal & clear details when SOS is resolved
   useEffect(() => {
     if (!activeSos) {
       setSosActiveModal(false);
@@ -112,37 +98,44 @@ const CitizenDashboard: React.FC = () => {
     }
   }, [activeSos]);
 
-  const handleSosClick = async () => {
-    let userLat = 22.8717;
-    let userLng = 91.0879;
-    const saved = localStorage.getItem('PROTEGO_CURRENT_GPS_LOCATION');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        userLat = parsed.lat;
-        userLng = parsed.lng;
-      } catch {}
-    }
-    
-    let minDistance = Infinity;
-    let closestUnit = initialUnits[0];
-    initialUnits.forEach(u => {
-      if (u.status === 'On-Patrol') {
-        const d = getDistanceKm(userLat, userLng, u.lat, u.lng);
-        if (d < minDistance) {
-          minDistance = d;
-          closestUnit = u;
-        }
-      }
-    });
+  const locateNearestStation = () => {
+    setIsLocating(true);
+    const applyCoords = (lat: number, lng: number) => {
+      setNearestStationInfo(findNearestPoliceStation(lat, lng));
+      setIsLocating(false);
+    };
 
-    const etaMins = Math.max(1, Math.ceil(minDistance * 1.5));
+    const saved = getUserCoords();
+    if (saved.lat !== 22.8717 || saved.lng !== 91.0879) {
+      applyCoords(saved.lat, saved.lng);
+      return;
+    }
+
+    if (!navigator.geolocation) {
+      applyCoords(22.8717, 91.0879);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      pos => applyCoords(pos.coords.latitude, pos.coords.longitude),
+      () => applyCoords(22.8717, 91.0879),
+      { timeout: 5000 }
+    );
+  };
+
+  const handleSosClick = async () => {
+    const { lat, lng } = getUserCoords();
+    const patrolUnits = initialUnits.filter(u => u.status === 'On-Patrol');
+    const closestUnit = patrolUnits.reduce((prev, curr) => 
+      getDistanceKm(lat, lng, curr.lat, curr.lng) < getDistanceKm(lat, lng, prev.lat, prev.lng) ? curr : prev,
+      initialUnits[0]
+    );
+
+    const dist = getDistanceKm(lat, lng, closestUnit.lat, closestUnit.lng);
+    const etaMins = Math.max(1, Math.ceil(dist * 1.5));
     const etaSecs = Math.floor(Math.random() * 60);
 
-    setSosDetails({
-      lat: userLat.toFixed(4),
-      lng: userLng.toFixed(4)
-    });
+    setSosDetails({ lat: lat.toFixed(4), lng: lng.toFixed(4) });
 
     setTimeout(() => {
       setSosDetails(prev => prev ? {
@@ -150,9 +143,9 @@ const CitizenDashboard: React.FC = () => {
         unit: `${closestUnit.unitId} (${closestUnit.sector})`,
         eta: `${etaMins.toString().padStart(2, '0')}m ${etaSecs.toString().padStart(2, '0')}s`
       } : null);
-    }, 3500);
+    }, 2000);
 
-    await triggerEmergencySos(`${userLat.toFixed(4)},${userLng.toFixed(4)} (Live GPS Position)`);
+    await triggerEmergencySos(`${lat.toFixed(4)},${lng.toFixed(4)} (Live GPS Position)`);
     setSosActiveModal(true);
   };
 
@@ -161,26 +154,37 @@ const CitizenDashboard: React.FC = () => {
     setSosActiveModal(false);
   };
 
-  const allCases = [
-    ...gds.map(g => ({
-      id: g.gd_id,
-      title: g.title,
-      type: 'General Diary',
-      status: g.status,
-      desc: g.description,
-      date: g.created_at,
-      icon: ClipboardList
-    })),
-    ...crimes.map(c => ({
-      id: c.report_id,
-      title: c.crime_type,
-      type: 'Crime Report',
-      status: c.status,
-      desc: c.description,
-      date: c.created_at,
-      icon: ShieldAlert
-    }))
-  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const allCases: CaseItem[] = useMemo(() => {
+    const items: CaseItem[] = [
+      ...gds.map(g => ({
+        id: g.gd_id,
+        title: g.title,
+        type: 'General Diary',
+        status: g.status,
+        desc: g.description,
+        date: g.created_at,
+        icon: ClipboardList
+      })),
+      ...crimes.map(c => ({
+        id: c.report_id,
+        title: c.crime_type,
+        type: 'Crime Report',
+        status: c.status,
+        desc: c.description,
+        date: c.created_at,
+        icon: ShieldAlert
+      }))
+    ];
+    return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [gds, crimes]);
+
+  const filteredStations = useMemo(() => {
+    const q = precinctSearch.trim().toLowerCase();
+    if (!q) return NOAKHALI_POLICE_STATIONS;
+    return NOAKHALI_POLICE_STATIONS.filter(
+      s => s.name.toLowerCase().includes(q) || s.upazila.toLowerCase().includes(q) || s.address.toLowerCase().includes(q)
+    );
+  }, [precinctSearch]);
 
   return (
     <div className="min-h-screen bg-[#f4f7f6]">
@@ -188,7 +192,7 @@ const CitizenDashboard: React.FC = () => {
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
         
-        {/* Header with greeting and refresh */}
+        {/* Header */}
         <header className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
@@ -216,7 +220,7 @@ const CitizenDashboard: React.FC = () => {
           </div>
         </header>
 
-        {/* Active Emergency Banner if SOS is active */}
+        {/* Active Emergency SOS Banner */}
         {activeSos && (
           <div className="mb-6 bg-rose-600 text-white p-4 sm:p-5 rounded-2xl shadow-lg border border-rose-700 flex flex-col sm:flex-row items-center justify-between gap-4 animate-pulse">
             <div className="flex items-center space-x-3">
@@ -238,7 +242,6 @@ const CitizenDashboard: React.FC = () => {
         {/* Action Cards */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-10">
           
-          {/* File GD Card */}
           <div 
             onClick={() => navigate('/file-gd')}
             className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 sm:p-6 flex flex-col cursor-pointer hover:shadow-md hover:border-slate-300 transition-all group"
@@ -255,7 +258,6 @@ const CitizenDashboard: React.FC = () => {
             </p>
           </div>
 
-          {/* Report Crime Card */}
           <div 
             onClick={() => navigate('/report-crime')}
             className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 sm:p-6 flex flex-col cursor-pointer hover:shadow-md hover:border-slate-300 transition-all group"
@@ -272,14 +274,10 @@ const CitizenDashboard: React.FC = () => {
             </p>
           </div>
 
-          {/* SOS Card (Laptop / Desktop View) */}
           <div 
             onClick={handleSosClick}
             className="hidden md:flex bg-white rounded-xl shadow-[0_4px_20px_-4px_rgba(220,38,38,0.2)] border border-red-100 p-5 sm:p-6 flex-col items-center justify-center text-center cursor-pointer hover:scale-[1.02] active:scale-[0.99] transition-transform relative overflow-hidden group"
           >
-            <div className="absolute -right-6 -top-6 w-24 h-24 bg-red-50 rounded-full opacity-50 pointer-events-none"></div>
-            <div className="absolute -left-4 -bottom-4 w-16 h-16 bg-red-50 rounded-full opacity-50 pointer-events-none"></div>
-            
             <div className="bg-[#b91c1c] w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center mb-3 sm:mb-4 shadow-[0_8px_16px_rgba(185,28,28,0.4)] z-10 group-hover:scale-105 transition-transform">
               <span className="text-white font-black text-xl sm:text-2xl tracking-widest">SOS</span>
             </div>
@@ -299,7 +297,7 @@ const CitizenDashboard: React.FC = () => {
         {/* Content Grids */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
           
-          {/* Real-time Case Tracking */}
+          {/* Case Tracking Timeline */}
           <section className="lg:col-span-5 bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h-[440px] sm:h-[500px]">
             <div className="px-5 sm:px-6 py-4 sm:py-5 border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center space-x-2">
@@ -333,10 +331,10 @@ const CitizenDashboard: React.FC = () => {
                         </div>
                         <div className="bg-slate-50 group-hover:bg-slate-100/80 border border-slate-200 rounded-xl p-3.5 sm:p-4 transition">
                           <div className="flex flex-wrap justify-between items-start gap-1 mb-1.5">
-                            <span className="text-[11px] sm:text-xs font-bold text-slate-600">{item.id}</span>
-                            <span className={`text-[9px] sm:text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded ${
-                              isApproved ? 'bg-emerald-100 text-emerald-800' : isPending ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'
-                            }`}>
+                            <span className="text-[11px] sm:text-xs font-mono font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200" title={`Full Reference ID: ${item.id}`}>
+                              {formatIncidentId(item.id, item.type)}
+                            </span>
+                            <span className={`text-[9px] sm:text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded ${statusBadgeStyles[item.status] || 'bg-blue-100 text-blue-800'}`}>
                               {item.status}
                             </span>
                           </div>
@@ -360,10 +358,9 @@ const CitizenDashboard: React.FC = () => {
         </div>
       </main>
 
-      {/* Responsive Footer */}
       <Footer />
       
-      {/* Floating SOS Action Button */}
+      {/* Floating SOS Action Button (Mobile) */}
       <div className="fixed bottom-5 right-5 sm:bottom-8 sm:right-8 z-50 lg:hidden">
         <button 
           onClick={handleSosClick}
@@ -385,7 +382,16 @@ const CitizenDashboard: React.FC = () => {
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
               <div>
                 <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">{selectedCase.type}</span>
-                <h3 className="text-base font-extrabold text-slate-900">{selectedCase.id}</h3>
+                <div className="flex items-center space-x-2">
+                  <h3 className="text-base font-extrabold text-slate-900 font-mono">
+                    {formatIncidentId(selectedCase.id, selectedCase.type)}
+                  </h3>
+                  {selectedCase.id.length > 14 && (
+                    <span className="text-[10px] font-mono text-slate-400" title={`Full ID: ${selectedCase.id}`}>
+                      ({selectedCase.id.slice(0, 8)}...)
+                    </span>
+                  )}
+                </div>
               </div>
               <button onClick={() => setSelectedCase(null)} className="text-slate-400 hover:text-slate-700 p-1">
                 <X className="w-5 h-5" />
@@ -399,7 +405,7 @@ const CitizenDashboard: React.FC = () => {
               </div>
               <div>
                 <p className="font-bold text-slate-500">Official Status</p>
-                <span className="inline-block mt-1 px-2.5 py-1 text-xs font-black uppercase rounded bg-slate-100 text-slate-800 border border-slate-300">
+                <span className={`inline-block mt-1 px-2.5 py-1 text-xs font-black uppercase rounded ${statusBadgeStyles[selectedCase.status] || 'bg-slate-100 text-slate-800 border border-slate-300'}`}>
                   {selectedCase.status}
                 </span>
               </div>
@@ -432,7 +438,6 @@ const CitizenDashboard: React.FC = () => {
         <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-5 sm:p-6 border border-slate-200 max-h-[90vh] flex flex-col">
             
-            {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3 shrink-0">
               <div className="flex items-center space-x-2.5">
                 <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
@@ -448,28 +453,26 @@ const CitizenDashboard: React.FC = () => {
               </button>
             </div>
 
-            {/* Search Box */}
             <div className="relative mb-3 shrink-0">
               <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
                 value={precinctSearch}
                 onChange={e => setPrecinctSearch(e.target.value)}
-                placeholder="Search thana or upazila (e.g. Sudharam, Sonapur, Begumganj)..."
+                placeholder="Search thana or upazila..."
                 className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
               />
             </div>
 
-            {/* Scrollable Content */}
             <div className="space-y-3 overflow-y-auto pr-1 flex-1">
               
-              {/* 1. Location-Based Nearest Thana */}
+              {/* Nearest Thana Card */}
               <div className="p-3.5 bg-blue-50/70 rounded-xl border border-blue-200 relative overflow-hidden">
                 {isLocating && (
                   <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10">
                     <div className="flex items-center space-x-1.5 text-blue-600 text-xs font-bold">
                       <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      <span>Pinpointing Nearest Noakhali Thana...</span>
+                      <span>Detecting Nearest Thana...</span>
                     </div>
                   </div>
                 )}
@@ -480,14 +483,10 @@ const CitizenDashboard: React.FC = () => {
                       <div className="flex items-center space-x-1.5">
                         <Map className="w-3.5 h-3.5 text-blue-600" />
                         <span className="text-[9px] font-black uppercase text-blue-700 tracking-wider">
-                          📍 Nearest to your location ({nearestStationInfo.distanceKm} km)
+                          📍 Nearest ({nearestStationInfo.distanceKm} km away)
                         </span>
                       </div>
-                      <button
-                        onClick={locateNearestStation}
-                        className="text-[9px] font-bold text-blue-600 hover:text-blue-800 flex items-center space-x-1"
-                        title="Recalculate GPS"
-                      >
+                      <button onClick={locateNearestStation} className="text-[9px] font-bold text-blue-600 hover:text-blue-800 flex items-center space-x-1">
                         <RefreshCw className="w-2.5 h-2.5" />
                         <span>Re-detect</span>
                       </button>
@@ -527,10 +526,7 @@ const CitizenDashboard: React.FC = () => {
                 ) : (
                   <div className="text-center py-2">
                     <p className="text-xs text-slate-600 mb-1">Detecting nearest Noakhali police station...</p>
-                    <button
-                      onClick={locateNearestStation}
-                      className="text-xs bg-blue-600 text-white px-3 py-1 rounded-lg font-bold inline-flex items-center space-x-1"
-                    >
+                    <button onClick={locateNearestStation} className="text-xs bg-blue-600 text-white px-3 py-1 rounded-lg font-bold inline-flex items-center space-x-1">
                       <Map className="w-3 h-3" />
                       <span>Locate My Thana</span>
                     </button>
@@ -538,89 +534,62 @@ const CitizenDashboard: React.FC = () => {
                 )}
               </div>
 
-              {/* 2. Noakhali District Police SP Office & Control Room */}
-              <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-[9px] font-black uppercase text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded tracking-wider">
-                      District Central HQ
-                    </span>
-                    <h4 className="text-xs font-black text-slate-900 mt-1">Noakhali District Police SP Office</h4>
-                    <p className="text-[11px] text-slate-500">Maijdee Court Road • 24/7 District Police Control Room</p>
-                  </div>
+              {/* District SP Office */}
+              <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-xs">
+                <div>
+                  <span className="text-[9px] font-black uppercase text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded tracking-wider">District Central HQ</span>
+                  <h4 className="text-xs font-black text-slate-900 mt-1">Noakhali District Police SP Office</h4>
+                  <p className="text-[11px] text-slate-500">Maijdee Court Road • Control Room: +8801320-115898</p>
                 </div>
-
-                <div className="mt-2.5 pt-2 border-t border-slate-200 flex items-center justify-between text-xs">
-                  <div>
-                    <span className="font-bold text-slate-700 text-xs">+8801320-115898</span>
-                    <span className="text-[10px] text-slate-400 ml-1.5">• Landline: 0321-61450</span>
-                  </div>
-                  <a
-                    href="tel:+8801320115898"
-                    className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-bold text-[10px] transition inline-flex items-center space-x-1"
-                  >
-                    <Phone className="w-2.5 h-2.5" />
-                    <span>Call Control Room</span>
-                  </a>
-                </div>
+                <a
+                  href="tel:+8801320115898"
+                  className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-bold text-[10px] transition inline-flex items-center space-x-1 shrink-0 ml-2"
+                >
+                  <Phone className="w-2.5 h-2.5" />
+                  <span>Call HQ</span>
+                </a>
               </div>
 
-              {/* 3. National Emergency Hotline */}
+              {/* Emergency Hotline 999 */}
               <div className="p-3 bg-rose-50 rounded-xl border border-rose-200 flex items-center justify-between">
                 <div>
                   <h4 className="text-xs font-black text-rose-900">National Emergency Hotline 999</h4>
-                  <p className="text-[10px] text-rose-600">Immediate Police, Fire & Medical Rescue Dispatch</p>
+                  <p className="text-[10px] text-rose-600">Immediate Police, Fire & Medical Rescue</p>
                 </div>
-                <a
-                  href="tel:999"
-                  className="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg font-black text-xs shadow-sm transition"
-                >
+                <a href="tel:999" className="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg font-black text-xs shadow-sm transition">
                   Dial 999
                 </a>
               </div>
 
-              {/* 4. Filtered List of All Noakhali Police Stations */}
+              {/* All Police Stations List */}
               <div className="pt-2">
                 <h5 className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2">
-                  All Upazila Police Stations ({NOAKHALI_POLICE_STATIONS.length})
+                  All Upazila Police Stations ({filteredStations.length})
                 </h5>
 
                 <div className="space-y-2">
-                  {NOAKHALI_POLICE_STATIONS
-                    .filter((s: NoakhaliPoliceStation) => {
-                      const query = precinctSearch.trim().toLowerCase();
-                      if (!query) return true;
-                      return (
-                        s.name.toLowerCase().includes(query) ||
-                        s.upazila.toLowerCase().includes(query) ||
-                        s.address.toLowerCase().includes(query)
-                      );
-                    })
-                    .map((station: NoakhaliPoliceStation) => (
-                      <div key={station.id} className="p-2.5 bg-white rounded-lg border border-slate-200 hover:border-slate-300 transition flex items-center justify-between text-xs">
-                        <div>
-                          <div className="flex items-center space-x-1.5">
-                            <h6 className="font-bold text-slate-800 text-xs">{station.name}</h6>
-                          </div>
-                          <p className="text-[10px] text-slate-500">{station.address}</p>
-                          <p className="text-[10px] text-blue-600 font-medium mt-0.5">
-                            OC: {station.phone} • Duty: {station.dutyOfficerPhone}
-                          </p>
-                        </div>
-                        <a
-                          href={`tel:${station.phone.replace(/[^0-9+]/g, '')}`}
-                          className="shrink-0 px-2.5 py-1 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 border border-slate-200 rounded-md font-bold text-[10px] transition"
-                        >
-                          Call
-                        </a>
+                  {filteredStations.map(station => (
+                    <div key={station.id} className="p-2.5 bg-white rounded-lg border border-slate-200 hover:border-slate-300 transition flex items-center justify-between text-xs">
+                      <div>
+                        <h6 className="font-bold text-slate-800 text-xs">{station.name}</h6>
+                        <p className="text-[10px] text-slate-500">{station.address}</p>
+                        <p className="text-[10px] text-blue-600 font-medium mt-0.5">
+                          OC: {station.phone} • Duty: {station.dutyOfficerPhone}
+                        </p>
                       </div>
-                    ))}
+                      <a
+                        href={`tel:${station.phone.replace(/[^0-9+]/g, '')}`}
+                        className="shrink-0 px-2.5 py-1 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 border border-slate-200 rounded-md font-bold text-[10px] transition ml-2"
+                      >
+                        Call
+                      </a>
+                    </div>
+                  ))}
                 </div>
               </div>
 
             </div>
 
-            {/* Modal Footer */}
             <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between shrink-0">
               <span className="text-[10px] text-slate-400 font-medium">Source: Bangladesh Police, Noakhali District</span>
               <button

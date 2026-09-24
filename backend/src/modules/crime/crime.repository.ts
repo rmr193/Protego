@@ -6,6 +6,19 @@ export class CrimeRepository {
   }
 
   async findReportById(id: string) {
+    if (id.toUpperCase().startsWith('CR-') || (id.length === 8 && /^[0-9a-f]{8}$/i.test(id))) {
+      const clean = id.replace(/^CR-/i, '').toLowerCase();
+      const report = await prisma.crimeReport.findFirst({
+        where: { report_id: { startsWith: clean, mode: 'insensitive' } },
+        include: { 
+          user: { select: { full_name: true, email: true, phone: true } },
+          evidence: true,
+          ai_analysis: true
+        }
+      });
+      if (report) return report;
+    }
+
     return prisma.crimeReport.findUnique({
       where: { report_id: id },
       include: { 
@@ -34,8 +47,20 @@ export class CrimeRepository {
   }
 
   async updateReportStatus(id: string, status: string) {
+    let targetId = id;
+    if (id.toUpperCase().startsWith('CR-') || (id.length === 8 && /^[0-9a-f]{8}$/i.test(id))) {
+      const clean = id.replace(/^CR-/i, '').toLowerCase();
+      const existing = await prisma.crimeReport.findFirst({
+        where: { report_id: { startsWith: clean, mode: 'insensitive' } },
+        select: { report_id: true }
+      });
+      if (existing) {
+        targetId = existing.report_id;
+      }
+    }
+
     return prisma.crimeReport.update({
-      where: { report_id: id },
+      where: { report_id: targetId },
       data: { status }
     });
   }

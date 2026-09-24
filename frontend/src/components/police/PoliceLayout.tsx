@@ -16,6 +16,7 @@ import { usePoliceStore } from '../../store/policeStore';
 import { useAuthStore } from '../../store/authStore';
 import Logo from '../common/Logo';
 import { getMediaUrl } from '../../utils/url';
+import { formatIncidentId } from '../../utils/idUtils';
 
 const navItems = [
   { path: '/police', label: 'Dashboard', icon: LayoutGrid },
@@ -149,7 +150,9 @@ const PoliceLayout: React.FC = () => {
                       >
                         <div className="min-w-0 flex-1">
                           <p className="text-xs font-bold text-slate-800 truncate">{i.title || i.type}</p>
-                          <p className="text-[10px] text-slate-500 mt-0.5">{i.id} · {i.time}</p>
+                          <p className="text-[10px] text-slate-500 mt-0.5">
+                            <span className="font-mono font-bold text-slate-700">{i.displayId || formatIncidentId(i.id, i.type)}</span> · {i.time}
+                          </p>
                         </div>
                         {i.status === 'NEW' && !notificationsRead && (
                           <span className="w-2 h-2 rounded-full bg-red-500 mt-1.5 shrink-0 animate-ping"></span>

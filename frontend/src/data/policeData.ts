@@ -14,6 +14,7 @@ export type IncidentStatus = 'NEW' | 'DISPATCHED' | 'RESOLVED';
 
 export interface IncidentRecord {
   id: string;
+  displayId?: string;
   title?: string;
   type: string;
   location: string;

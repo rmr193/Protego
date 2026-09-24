@@ -15,6 +15,7 @@ import type {
 import { crimeApi, sosApi, policeApi, analyticsApi, gdApi } from '../services/api';
 import { subscribeToEvents } from '../services/socket';
 import { broadcastSosState, subscribeToSosBroadcast } from '../utils/sosBroadcast';
+import { formatIncidentId } from '../utils/idUtils';
 import { useCitizenStore } from './citizenStore';
 
 interface PoliceState {
@@ -86,6 +87,7 @@ export const usePoliceStore = create<PoliceState>((set, get) => ({
         if (backendReports.length > 0) {
           const mappedCrimes: IncidentRecord[] = backendReports.map((r: any) => ({
             id: r.report_id,
+            displayId: formatIncidentId(r.report_id, 'Crime Report'),
             title: r.crime_type,
             type: 'Crime Report',
             location: r.location,
@@ -104,6 +106,7 @@ export const usePoliceStore = create<PoliceState>((set, get) => ({
         if (backendGds.length > 0) {
           const mappedGds: IncidentRecord[] = backendGds.map((g: any) => ({
             id: g.gd_id,
+            displayId: formatIncidentId(g.gd_id, 'General Diary'),
             title: g.title,
             type: 'General Diary',
             location: 'General Area', // GDs don't have a specific location field in this schema
@@ -271,6 +274,7 @@ export const usePoliceStore = create<PoliceState>((set, get) => ({
       onCrimeReported: report => {
         const newIncident: IncidentRecord = {
           id: report.report_id,
+          displayId: formatIncidentId(report.report_id, 'Crime Report'),
           type: 'Crime Report',
           location: report.location,
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -287,6 +291,7 @@ export const usePoliceStore = create<PoliceState>((set, get) => ({
       onGDFiled: gd => {
         const newIncident: IncidentRecord = {
           id: gd.gd_id,
+          displayId: formatIncidentId(gd.gd_id, 'General Diary'),
           title: gd.title,
           type: 'General Diary',
           location: 'General Area',

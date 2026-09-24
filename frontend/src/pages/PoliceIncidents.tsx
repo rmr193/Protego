@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { X, MapPin, Clock, Siren, CheckCircle2, ChevronDown, RefreshCw, User } from 'lucide-react';
 import { usePoliceStore } from '../store/policeStore';
 import type { IncidentRecord, IncidentSeverity, IncidentStatus } from '../data/policeData';
+import { formatIncidentId } from '../utils/idUtils';
 
 const severityStyles: Record<IncidentSeverity, string> = {
   Critical: 'bg-red-100 text-red-700',
@@ -34,6 +35,8 @@ const PoliceIncidents: React.FC = () => {
       (!q ||
         i.type.toLowerCase().includes(q) ||
         i.id.toLowerCase().includes(q) ||
+        (i.displayId && i.displayId.toLowerCase().includes(q)) ||
+        formatIncidentId(i.id, i.type).toLowerCase().includes(q) ||
         i.location.toLowerCase().includes(q) ||
         (i.summary && i.summary.toLowerCase().includes(q)))
   );
@@ -138,7 +141,14 @@ const PoliceIncidents: React.FC = () => {
                   onClick={() => setSelected(incident)}
                   className="hover:bg-slate-50/60 transition-colors cursor-pointer"
                 >
-                  <td className="py-2.5 sm:py-3 px-4 sm:px-5 font-extrabold text-slate-800 font-mono">{incident.id}</td>
+                  <td className="py-2.5 sm:py-3 px-4 sm:px-5 font-mono">
+                    <span
+                      title={`Full Incident ID: ${incident.id}`}
+                      className="inline-flex items-center px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-800 text-[11px] font-bold tracking-wide transition-colors border border-slate-200/80 cursor-help"
+                    >
+                      {incident.displayId || formatIncidentId(incident.id, incident.type)}
+                    </span>
+                  </td>
                   <td className="py-2.5 sm:py-3 px-4 sm:px-5 text-slate-800 font-semibold">{incident.type}</td>
                   <td className="py-2.5 sm:py-3 px-4 sm:px-5">
                     <span className={`inline-block px-2 py-0.5 text-[10px] font-bold rounded ${severityStyles[incident.severity]}`}>
@@ -166,8 +176,17 @@ const PoliceIncidents: React.FC = () => {
           <div className="relative bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md max-h-[90vh] overflow-y-auto z-10 p-4 sm:p-6">
             <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-extrabold text-slate-400 font-mono">{selectedLive.id}</span>
-                <h3 className="text-sm sm:text-base font-extrabold text-slate-900">{selectedLive.type}</h3>
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs font-mono font-extrabold text-indigo-700 bg-indigo-50 border border-indigo-200/80 px-2 py-0.5 rounded">
+                    {selectedLive.displayId || formatIncidentId(selectedLive.id, selectedLive.type)}
+                  </span>
+                  {selectedLive.id.length > 14 && (
+                    <span className="text-[10px] font-mono text-slate-400" title={`Full ID: ${selectedLive.id}`}>
+                      ({selectedLive.id.slice(0, 8)}...)
+                    </span>
+                  )}
+                </div>
+                <h3 className="text-sm sm:text-base font-extrabold text-slate-900 mt-0.5">{selectedLive.type}</h3>
               </div>
               <button
                 onClick={() => setSelected(null)}

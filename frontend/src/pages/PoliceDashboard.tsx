@@ -22,6 +22,7 @@ import {
 import { usePoliceStore } from '../store/policeStore';
 import type { UnitStatus, IncidentStatus } from '../data/policeData';
 import { parseIncidentCoordinates } from '../utils/geoUtils';
+import { formatIncidentId } from '../utils/idUtils';
 
 const statusStyles: Record<UnitStatus, string> = {
   'On-Patrol': 'bg-indigo-50 text-indigo-600',
@@ -563,7 +564,7 @@ const PoliceDashboard: React.FC = () => {
   );
 
   const filteredIncidents = incidents.filter(
-    i => !q || i.id.toLowerCase().includes(q) || i.type.toLowerCase().includes(q) || i.location.toLowerCase().includes(q)
+    i => !q || i.id.toLowerCase().includes(q) || (i.displayId && i.displayId.toLowerCase().includes(q)) || formatIncidentId(i.id, i.type).toLowerCase().includes(q) || i.type.toLowerCase().includes(q) || i.location.toLowerCase().includes(q)
   );
 
   // Dynamic calculated statistics
@@ -785,7 +786,9 @@ const PoliceDashboard: React.FC = () => {
                 className="p-3 rounded-lg border border-slate-100 hover:border-slate-300 bg-slate-50/50 hover:bg-slate-50 transition-all cursor-pointer group"
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-mono font-bold text-slate-500">{inc.id}</span>
+                  <span className="text-[10px] font-mono font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200/80" title={`Full Incident ID: ${inc.id}`}>
+                    {inc.displayId || formatIncidentId(inc.id, inc.type)}
+                  </span>
                   <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded ${incidentStatusStyles[inc.status]}`}>
                     {inc.status}
                   </span>

@@ -15,6 +15,7 @@ import { useCitizenStore } from '../store/citizenStore';
 import { useAuthStore } from '../store/authStore';
 import { evidenceApi } from '../services/api';
 import Logo from '../components/common/Logo';
+import { formatIncidentId } from '../utils/idUtils';
 
 const ReportCrimePage: React.FC = () => {
   const navigate = useNavigate();
@@ -218,7 +219,7 @@ const ReportCrimePage: React.FC = () => {
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Crime Report Dispatched Successfully!</h2>
             <p className="text-xs sm:text-sm text-slate-500 max-w-md">
-              Your report <span className="font-mono font-bold text-slate-900">{submittedReportId}</span> has been logged and forwarded to the central dispatch queue.
+              Your report <span className="font-mono font-bold text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200" title={`Full ID: ${submittedReportId}`}>{formatIncidentId(submittedReportId, incidentType)}</span> has been logged and forwarded to the central dispatch queue.
             </p>
             
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl max-w-md w-full text-left text-xs space-y-1.5">
@@ -490,7 +491,11 @@ const ReportCrimePage: React.FC = () => {
               <tbody className="divide-y divide-slate-100">
                 {crimes.map(r => (
                   <tr key={r.report_id} className="hover:bg-slate-50/80 transition">
-                    <td className="py-2.5 px-3 font-mono font-bold text-slate-900">{r.report_id}</td>
+                    <td className="py-2.5 px-3 font-mono">
+                      <span className="inline-block px-1.5 py-0.5 rounded bg-slate-100 font-bold text-slate-800 text-[11px] border border-slate-200" title={`Full Report ID: ${r.report_id}`}>
+                        {formatIncidentId(r.report_id, r.crime_type)}
+                      </span>
+                    </td>
                     <td className="py-2.5 px-3 font-semibold text-slate-800">{r.crime_type}</td>
                     <td className="py-2.5 px-3 text-slate-600 truncate max-w-[140px]">{r.location}</td>
                     <td className="py-2.5 px-3">

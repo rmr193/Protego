@@ -23,6 +23,7 @@ import { useCitizenStore } from '../store/citizenStore';
 import { useAuthStore } from '../store/authStore';
 import Logo from '../components/common/Logo';
 import QRCode from 'react-qr-code';
+import { formatIncidentId } from '../utils/idUtils';
 
 interface UploadedFileItem {
   id: string;
@@ -576,7 +577,7 @@ LEDGER VERIFICATION: SEC-HASH-${Date.now()}
                 <div className="flex items-center justify-between pb-4 sm:pb-6 border-b border-slate-100 mb-5 sm:mb-6">
                   <Logo badge="RECEIPT" />
                   <div className="text-right text-[9px] sm:text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
-                    <p>TRANS-ID: {submittedGDId}</p>
+                    <p>TRANS-ID: {formatIncidentId(submittedGDId, 'General Diary')}</p>
                     <p>DATE: {new Date().toLocaleDateString()}</p>
                   </div>
                 </div>
@@ -587,8 +588,8 @@ LEDGER VERIFICATION: SEC-HASH-${Date.now()}
                     <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
                       GD REFERENCE NUMBER
                     </span>
-                    <span className="text-base sm:text-lg font-black text-slate-900 font-mono tracking-tight break-all">
-                      {submittedGDId}
+                    <span className="text-base sm:text-lg font-black text-slate-900 font-mono tracking-tight" title={`Full ID: ${submittedGDId}`}>
+                      {formatIncidentId(submittedGDId, 'General Diary')}
                     </span>
                   </div>
 
