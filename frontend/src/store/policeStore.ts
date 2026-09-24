@@ -133,7 +133,7 @@ export const usePoliceStore = create<PoliceState>((set, get) => ({
       }
 
       set({ isLoading: false });
-    } catch (e) {
+    } catch {
       set({ isLoading: false });
     }
   },

@@ -102,7 +102,7 @@ const CitizenDashboard: React.FC = () => {
     if (precinctModalOpen && !nearestStationInfo) {
       locateNearestStation();
     }
-  }, [precinctModalOpen]);
+  }, [precinctModalOpen, nearestStationInfo]);
 
   // Immediately close modal & clear details when SOS is resolved
   useEffect(() => {
@@ -121,7 +121,7 @@ const CitizenDashboard: React.FC = () => {
         const parsed = JSON.parse(saved);
         userLat = parsed.lat;
         userLng = parsed.lng;
-      } catch (e) {}
+      } catch {}
     }
     
     let minDistance = Infinity;

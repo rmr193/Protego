@@ -240,7 +240,7 @@ export const useCitizenStore = create<CitizenState>((set, get) => ({
       localStorage.setItem('PROTEGO_SOS_ID', sosId);
       broadcastSosState(true, sosId);
       return { success: true };
-    } catch (err: any) {
+    } catch {
       set({ activeSos: true, sosId: 'sos-local' });
       localStorage.setItem('PROTEGO_SOS_ACTIVE', 'true');
       localStorage.setItem('PROTEGO_SOS_ID', 'sos-local');
@@ -260,7 +260,7 @@ export const useCitizenStore = create<CitizenState>((set, get) => ({
     if (sosId && sosId !== 'sos-local') {
       try {
         await sosApi.resolveAlert(sosId);
-      } catch (e) {
+      } catch {
         // Ignore
       }
     }

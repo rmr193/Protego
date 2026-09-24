@@ -28,7 +28,7 @@ export class PoliceController {
     }
   };
 
-  getAllStations = async (req: Request, res: Response, next: NextFunction) => {
+  getAllStations = async (_req: Request, res: Response, next: NextFunction) => {
     try {
       const stations = await this.policeService.getAllStations();
       sendSuccess(res, 200, stations);

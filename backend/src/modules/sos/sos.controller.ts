@@ -33,7 +33,7 @@ export class SOSController {
     }
   };
 
-  getActiveAlerts = async (req: Request, res: Response, next: NextFunction) => {
+  getActiveAlerts = async (_req: Request, res: Response, next: NextFunction) => {
     try {
       const alerts = await this.sosService.getActiveAlerts();
       sendSuccess(res, 200, alerts);

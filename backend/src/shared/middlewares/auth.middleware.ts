@@ -10,7 +10,7 @@ export interface AuthRequest extends Request {
   };
 }
 
-export const authenticate = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authenticate = (req: AuthRequest, _res: Response, next: NextFunction) => {
   let token;
   
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
@@ -31,7 +31,7 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
 };
 
 export const restrictTo = (...roles: string[]) => {
-  return (req: AuthRequest, res: Response, next: NextFunction) => {
+  return (req: AuthRequest, _res: Response, next: NextFunction) => {
     if (!req.user || !roles.includes(req.user.role)) {
       return next(new AppError('You do not have permission to perform this action', 403));
     }

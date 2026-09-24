@@ -18,7 +18,7 @@ export class HotspotController {
     }
   };
 
-  getAllHotspots = async (req: Request, res: Response, next: NextFunction) => {
+  getAllHotspots = async (_req: Request, res: Response, next: NextFunction) => {
     try {
       const hotspots = await this.hotspotService.getAllHotspots();
       sendSuccess(res, 200, hotspots);

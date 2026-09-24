@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { CaseService } from './case.service';
 import { sendSuccess } from '../../shared/utils/response';
 import { AuthRequest } from '../../shared/middlewares/auth.middleware';

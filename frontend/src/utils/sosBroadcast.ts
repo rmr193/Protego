@@ -20,7 +20,7 @@ export const broadcastSosState = (active: boolean, sosId: string | null = null) 
 
     // Storage event for broader browser compatibility
     localStorage.setItem('PROTEGO_SOS_EVENT', JSON.stringify({ active, sosId, time: Date.now() }));
-  } catch (e) {
+  } catch {
     // Non-blocking
   }
 };

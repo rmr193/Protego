@@ -49,7 +49,7 @@ const ReportCrimePage: React.FC = () => {
             } else {
               setLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
             }
-          } catch (err) {
+          } catch {
             setLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
           }
         },

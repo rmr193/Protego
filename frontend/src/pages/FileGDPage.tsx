@@ -70,7 +70,7 @@ const FileGDPage: React.FC = () => {
             } else {
               setLocationText(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
             }
-          } catch (err) {
+          } catch {
             setLocationText(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
           }
         },

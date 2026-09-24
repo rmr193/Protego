@@ -147,7 +147,7 @@ const PoliceDashboard: React.FC = () => {
   const [zones, setZones] = useState<SafetyZone[]>(() => {
     const saved = localStorage.getItem('PROTEGO_SAFETY_ZONES');
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) { }
+      try { return JSON.parse(saved); } catch { }
     }
     return defaultSafetyZones;
   });
@@ -281,6 +281,8 @@ const PoliceDashboard: React.FC = () => {
         mapInstanceRef.current = null;
       }
     };
+    // Leaflet map container must only initialize once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Render Safe & Unsafe Zone Geofences on Map

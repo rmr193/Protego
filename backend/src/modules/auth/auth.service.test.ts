@@ -1,6 +1,5 @@
 import { AuthService } from './auth.service';
 import { AuthRepository } from './auth.repository';
-import bcrypt from 'bcrypt';
 import { AppError } from '../../shared/utils/AppError';
 
 // Mock dependencies

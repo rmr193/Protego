@@ -2,9 +2,6 @@ import { AIRepository } from './ai.repository';
 import { AppError } from '../../shared/utils/AppError';
 import { logger } from '../../shared/utils/logger';
 
-// Ideally, this points to your Python ML service (e.g. http://localhost:5000)
-const ML_SERVICE_URL = process.env.ML_SERVICE_URL || 'http://localhost:5000';
-
 export class AIService {
   private aiRepository: AIRepository;
 
@@ -12,7 +9,7 @@ export class AIService {
     this.aiRepository = new AIRepository();
   }
 
-  async analyzeReport(reportId: string, textDescription: string) {
+  async analyzeReport(reportId: string, _textDescription?: string) {
     try {
       // In a real scenario, we call the Python ML Service
       // const response = await fetch(`${ML_SERVICE_URL}/analyze`, {

@@ -46,7 +46,7 @@ export class CaseService {
     return caseData;
   }
 
-  async getAllCases(userId: string, role: string, filtersInput: any) {
+  async getAllCases(_userId: string, role: string, filtersInput: any) {
     const filters: any = {};
     
     // If a police officer wants their own assigned cases:

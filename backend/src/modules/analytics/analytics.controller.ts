@@ -9,7 +9,7 @@ export class AnalyticsController {
     this.analyticsService = new AnalyticsService();
   }
 
-  getDashboardStats = async (req: Request, res: Response, next: NextFunction) => {
+  getDashboardStats = async (_req: Request, res: Response, next: NextFunction) => {
     try {
       const stats = await this.analyticsService.getDashboardStats();
       sendSuccess(res, 200, stats, 'Dashboard statistics retrieved successfully');

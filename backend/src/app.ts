@@ -61,12 +61,12 @@ app.use('/api/v1/hotspots', hotspotRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1/ai', aiRoutes);
 
-app.get('/health', (req: Request, res: Response) => {
+app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({ status: 'success', message: 'Protego API is running' });
 });
 
 // Handle unhandled routes
-app.use((req: Request, res: Response, next: NextFunction) => {
+app.use((req: Request, _res: Response, next: NextFunction) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 

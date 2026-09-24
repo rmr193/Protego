@@ -1,7 +1,6 @@
 import { EvidenceService } from './evidence.service';
 import { EvidenceRepository } from './evidence.repository';
 import { AppError } from '../../shared/utils/AppError';
-import fs from 'fs';
 
 jest.mock('./evidence.repository');
 jest.mock('fs');
